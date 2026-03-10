@@ -3,7 +3,7 @@ import { jwt } from "@elysiajs/jwt"
 
 export const authPlugin = new Elysia({ name: "auth-plugin" })
   .use(jwt({ name: "jwt", secret: process.env.JWT_SECRET! }))
-  .derive(async ({ jwt, headers, set }) => {
+  .derive({ as: 'scoped' }, async ({ jwt, headers, set }) => {
     const authorization = headers["authorization"]
     const token = authorization?.startsWith("Bearer ")
       ? authorization.slice(7)
