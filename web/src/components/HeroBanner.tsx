@@ -8,7 +8,7 @@ export function HeroBanner({ item }: { item: MediaItem }) {
   const type = item.media_type === "tv" ? "serie" : "movie";
 
   return (
-    <div className="relative w-full h-[420px] rounded-2xl overflow-hidden mb-10 shadow-2xl">
+    <div className="relative w-full h-105 rounded-2xl overflow-hidden mb-10 shadow-2xl">
       {item.backdrop_path && (
         <Image
           src={`https://image.tmdb.org/t/p/w1280${item.backdrop_path}`}

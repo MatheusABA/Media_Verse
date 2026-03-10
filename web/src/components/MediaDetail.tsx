@@ -27,7 +27,7 @@ export function MediaDetail({ detail, credits, similar }: Props) {
             sizes="100vw"
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-black/30 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-zinc-950 via-black/30 to-transparent" />
       </div>
 
       {/* Main info */}
@@ -52,9 +52,13 @@ export function MediaDetail({ detail, credits, similar }: Props) {
         {/* Info */}
         <div className="flex flex-col justify-end">
           {detail.tagline && (
-            <p className="text-zinc-400 italic text-sm mb-1">{detail.tagline}</p>
+            <p className="text-zinc-400 italic text-sm mb-1">
+              {detail.tagline}
+            </p>
           )}
-          <h1 className="text-4xl font-extrabold leading-tight mb-2">{title}</h1>
+          <h1 className="text-4xl font-extrabold leading-tight mb-2">
+            {title}
+          </h1>
 
           <div className="flex flex-wrap items-center gap-4 text-sm mb-4">
             <span className="flex items-center gap-1 text-yellow-400 font-bold">
@@ -76,7 +80,8 @@ export function MediaDetail({ detail, credits, similar }: Props) {
             {!isMovie && (
               <span className="flex items-center gap-1 text-zinc-400">
                 <Tv size={14} />
-                {(detail as TVDetail).number_of_seasons} temporada(s) · {(detail as TVDetail).number_of_episodes} episódios
+                {(detail as TVDetail).number_of_seasons} temporada(s) ·{" "}
+                {(detail as TVDetail).number_of_episodes} episódios
               </span>
             )}
           </div>
@@ -93,7 +98,9 @@ export function MediaDetail({ detail, credits, similar }: Props) {
             ))}
           </div>
 
-          <p className="text-zinc-300 text-sm max-w-2xl leading-relaxed">{detail.overview}</p>
+          <p className="text-zinc-300 text-sm max-w-2xl leading-relaxed">
+            {detail.overview}
+          </p>
         </div>
       </div>
 
@@ -114,11 +121,17 @@ export function MediaDetail({ detail, credits, similar }: Props) {
                       sizes="96px"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-zinc-500 text-xs">?</div>
+                    <div className="w-full h-full flex items-center justify-center text-zinc-500 text-xs">
+                      ?
+                    </div>
                   )}
                 </div>
-                <p className="text-xs font-bold text-zinc-200 truncate">{actor.name}</p>
-                <p className="text-xs text-zinc-500 truncate">{actor.character}</p>
+                <p className="text-xs font-bold text-zinc-200 truncate">
+                  {actor.name}
+                </p>
+                <p className="text-xs text-zinc-500 truncate">
+                  {actor.character}
+                </p>
               </div>
             ))}
           </div>
@@ -133,5 +146,5 @@ export function MediaDetail({ detail, credits, similar }: Props) {
         />
       )}
     </div>
-  )
+  );
 }
