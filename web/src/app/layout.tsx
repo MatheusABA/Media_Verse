@@ -19,12 +19,14 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body
-        className={`${geistSans.variable} antialiased bg-zinc-350 text-white`}
+        className={`${geistSans.variable} antialiased bg-zinc-950 text-white`}
       >
         <AuthProvider>
-          <div className="flex h-screen overflow-hidden">
+          <div className="flex h-screen w-full">
             <Sidebar />
-            <main className="ml-64 flex-1 p-8">{children}</main>
+            <main className="flex-1 min-w-0 p-8 overflow-y-auto overflow-x-hidden">
+              {children}
+            </main>
           </div>
         </AuthProvider>
       </body>

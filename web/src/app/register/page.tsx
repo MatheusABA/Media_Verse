@@ -17,11 +17,14 @@ export default function RegisterPage() {
     setError(null)
     setLoading(true)
     try {
-      const res = await fetch("http://localhost:3333/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password }),
-      })
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, email, password }),
+        },
+      );
       const data = await res.json()
       if (!res.ok) {
         setError(data.error || "Erro ao criar conta")
