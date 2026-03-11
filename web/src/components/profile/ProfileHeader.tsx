@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { MapPin, Calendar } from "lucide-react";
 import { useRef, useState } from "react";
+import { getFullUrl } from "@/src/utils/imageUrl";
 
 type ProfileHeaderProps = {
   user: {
@@ -15,15 +16,6 @@ type ProfileHeaderProps = {
   avatarUploading?: boolean;
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-function getFullUrl(path: string | null | undefined) {
-  if (!path) return undefined;
-  if (path.startsWith("http")) return path;
-  console.log("Path made full URL:", `${API_URL}${path}`);
-  return `${API_URL}${path}`;
-}
-
 export function ProfileHeader({
   user,
   memberSince,
@@ -32,7 +24,6 @@ export function ProfileHeader({
 }: ProfileHeaderProps) {
   const [hovered, setHovered] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  console.log(API_URL)
   return (
     <div className="flex items-end gap-6 mb-8 pb-8 border-b border-zinc-800">
       <div

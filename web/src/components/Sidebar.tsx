@@ -5,6 +5,8 @@ import { useAuth } from "../contexts/AuthContext"
 import { useState } from "react"
 import { House, Flame, Newspaper, Search, List, User, LogIn, LogOut, Plus, ArrowLeftFromLine, ArrowRightFromLine, Star } from "lucide-react"
 import { usePathname } from "next/dist/client/components/navigation";
+import Image from "next/image";
+import { getFullUrl } from "../utils/imageUrl";
 
 const navItems = [
   { href: "/", label: "Home", icon: <House size={22} /> },
@@ -64,19 +66,25 @@ export function Sidebar() {
       <div className="p-4 border-t-4 border-black">
         {isLoggedIn ? (
           <div className="flex flex-col gap-4">
-            {expanded && (
-              <span className="text-xs text-zinc-400 font-mono">
-                @{user?.username}
-              </span>
-            )}
             <Link
               href="/profile"
               className={`w-full flex items-center border-zinc-400 bg-zinc-900 text-zinc-100 font-extrabold hover:bg-zinc-100 hover:text-black transition-all uppercase rounded-md
                 ${!expanded ? "justify-center px-0" : "gap-2 hover:p-1"}`}
               title={!expanded ? "Perfil" : undefined}
             >
-              <User size={22} />
-              {expanded && <span>Perfil</span>}
+              {user?.avatarUrl ? (
+                <Image
+                  src={getFullUrl(user.avatarUrl) || ""}
+                  alt="Avatar"
+                  width={32}
+                  height={32}
+                  className="rounded-full object-cover"
+                  unoptimized
+                />
+              ) : (
+                <User size={22} />
+              )}
+              {expanded && <span>{user?.username}</span>}
             </Link>
             <button
               onClick={logout}

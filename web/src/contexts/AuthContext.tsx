@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useState } from "react";
 
 type User = {
-  id: string
-  username: string
-  email: string
-  bio: string | null
-  avatarUrl: string | null
-}
+  id: string;
+  username: string;
+  email: string;
+  bio: string | null;
+  avatarUrl: string | null;
+};
 
 type AuthContextType = {
   user: User | null;
@@ -18,24 +18,25 @@ type AuthContextType = {
   fetchWithAuth: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
   isLoggedIn: boolean;
   initialized: boolean;
+  updateUser: (newUser: Partial<User>) => void;
 };
 
-const AuthContext = createContext<AuthContextType>({} as AuthContextType)
+const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [token, setToken] = useState<string | null>(null)
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("accessToken");
-    const storedUser = localStorage.getItem("user")
+    const storedUser = localStorage.getItem("user");
     if (storedToken && storedUser) {
-      setToken(storedToken)
-      setUser(JSON.parse(storedUser))
+      setToken(storedToken);
+      setUser(JSON.parse(storedUser));
     }
     setInitialized(true);
-  }, [])
+  }, []);
 
   function login(accessToken: string, refreshToken: string, user: User) {
     setToken(accessToken);
@@ -117,6 +118,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return res;
   }
 
+  function updateUser(newUser: Partial<User>) {
+    setUser((prev): any => {
+      const updated = { ...prev, ...newUser };
+      localStorage.setItem("user", JSON.stringify(updated));
+      return updated;
+    });
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -127,6 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         fetchWithAuth,
         isLoggedIn: !!token,
         initialized,
+        updateUser,
       }}
     >
       {children}
@@ -134,4 +144,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export const useAuth = () => useContext(AuthContext)
+export const useAuth = () => useContext(AuthContext);

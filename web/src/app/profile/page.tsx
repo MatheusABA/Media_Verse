@@ -14,7 +14,8 @@ import { uploadAvatar } from "@/src/lib/api";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function ProfilePage() {
-  const { token, isLoggedIn, initialized, fetchWithAuth } = useAuth();
+  const { token, isLoggedIn, initialized, fetchWithAuth, updateUser } =
+    useAuth();
   const [data, setData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -26,7 +27,16 @@ export default function ProfilePage() {
         if (!r.ok) throw new Error("Failed to fetch profile");
         return r.json();
       })
-      .then(setData)
+      .then((profileData) => {
+        setData(profileData);
+        updateUser({
+          id: profileData.user.id,
+          username: profileData.user.username,
+          email: profileData.user.email,
+          bio: profileData.user.bio,
+          avatarUrl: profileData.user.avatarUrl,
+        });
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [token, fetchWithAuth]);
@@ -41,6 +51,7 @@ export default function ProfilePage() {
       setData((prev) =>
         prev ? { ...prev, user: { ...prev.user, avatarUrl } } : prev,
       );
+      updateUser({ avatarUrl });
     } catch {
       alert("Erro ao enviar imagem");
     }
