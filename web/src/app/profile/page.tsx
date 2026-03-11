@@ -4,41 +4,11 @@ import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { User, MapPin, Calendar, Film, Tv, Star, List, ChevronLeft, ChevronRight } from "lucide-react"
-import { useAuth } from "../../contexts/AuthContext"
+import { useAuth } from "@/src/contexts/AuthContext";
+import { ReviewedMedia } from "@/src/types/review";
+import { ProfileData } from "@/src/types/user";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type ReviewedMedia = {
-  id: string
-  title: string
-  posterUrl: string | null
-  tmdbId: string | null
-  rating: string | null
-  reviewContent: string
-  reviewCreatedAt: string
-}
-
-type ProfileData = {
-  user: {
-    id: string
-    username: string
-    email: string
-    bio: string | null
-    avatarUrl: string | null
-    location: string | null
-    createdAt: string
-  }
-  stats: {
-    moviesWatched: number
-    seriesWatched: number
-    reviewsCount: number
-    listsCount: number
-  }
-  reviewedMovies: ReviewedMedia[]
-  reviewedSeries: ReviewedMedia[]
-}
 
 // ─── Reviewed Media Card ──────────────────────────────────────────────────────
 
@@ -158,7 +128,7 @@ function ReviewedSection({
 // ─── Profile Page ─────────────────────────────────────────────────────────────
 
 export default function ProfilePage() {
-  const { token, isLoggedIn } = useAuth()
+  const { token, isLoggedIn, fetchWithAuth, initialized } = useAuth();
   const [data, setData] = useState<ProfileData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -187,13 +157,14 @@ export default function ProfilePage() {
     )
   }
 
-  if (loading) {
+  if (!initialized || loading) {
     return (
       <div className="flex items-center justify-center h-full text-zinc-400">
         Carregando...
       </div>
-    )
+    );
   }
+
 
   if (!data) return null
 

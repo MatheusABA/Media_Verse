@@ -26,9 +26,14 @@ const features = [
   },
 ];
 
-export function WelcomeSection({ isLoggedIn, userData, userStats, onCreateReview }: {
+export function WelcomeSection({
+  isLoggedIn,
+  userData,
+  userStats,
+  onCreateReview,
+}: {
   isLoggedIn: boolean;
-  userData?: userData;
+  userData?: userData | null;
   userStats?: { watched: number; reviews: number; lists: number };
   onCreateReview?: () => void;
 }) {
@@ -36,9 +41,11 @@ export function WelcomeSection({ isLoggedIn, userData, userStats, onCreateReview
     <section className="mb-10 rounded-2xl bg-zinc-900 border border-zinc-800 overflow-hidden shadow-2xl">
       <div className="px-10 py-12">
         <h2 className="text-4xl font-extrabold mb-3 leading-tight">
-          {isLoggedIn ? `Bem-vindo de volta, ${userData?.username || "usuário"}!` : "MediaVerse"}
+          {isLoggedIn
+            ? `Bem-vindo de volta, ${userData?.username || "usuário"}!`
+            : "MediaVerse"}
         </h2>
-        <p className="text-zinc-300 max-w-xl mb-8 text-base leading-relaxed">
+        <p className="text-zinc-300 max-w-6xl mb-8 text-base leading-relaxed">
           {isLoggedIn
             ? "Continue explorando, avaliando e compartilhando suas experiências!"
             : "Seu universo pessoal de filmes e séries. Registre o que assiste, descubra novidades, escreva reviews e conecte-se com amigos que compartilham seu gosto."}
@@ -64,10 +71,16 @@ export function WelcomeSection({ isLoggedIn, userData, userStats, onCreateReview
         <div className="flex gap-3 mb-10">
           {!isLoggedIn ? (
             <>
-              <Link href="/register" className="inline-flex items-center gap-2 bg-white text-black font-extrabold px-6 py-2 rounded-full hover:bg-zinc-200 transition-all uppercase text-sm">
+              <Link
+                href="/register"
+                className="inline-flex items-center gap-2 bg-white text-black font-extrabold px-6 py-2 rounded-full hover:bg-zinc-200 transition-all uppercase text-sm"
+              >
                 Criar conta grátis
               </Link>
-              <Link href="/login" className="inline-flex items-center gap-2 border border-zinc-600 text-zinc-200 font-extrabold px-6 py-2 rounded-full hover:bg-zinc-800 transition-all uppercase text-sm">
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-2 border border-zinc-600 text-zinc-200 font-extrabold px-6 py-2 rounded-full hover:bg-zinc-800 transition-all uppercase text-sm"
+              >
                 Já tenho conta
               </Link>
             </>

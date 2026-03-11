@@ -17,6 +17,7 @@ type AuthContextType = {
   logout: () => void;
   fetchWithAuth: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
   isLoggedIn: boolean;
+  initialized: boolean;
 };
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType)
@@ -24,6 +25,7 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [token, setToken] = useState<string | null>(null)
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("accessToken");
@@ -32,6 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(storedToken)
       setUser(JSON.parse(storedUser))
     }
+    setInitialized(true);
   }, [])
 
   function login(accessToken: string, refreshToken: string, user: User) {
@@ -69,7 +72,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (!res.ok) {
-      // Refresh token expirado ou inválido — força logout
       await logout();
       return null;
     }
@@ -113,7 +115,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, login, logout, fetchWithAuth, isLoggedIn: !!token }}
+      value={{
+        user,
+        token,
+        login,
+        logout,
+        fetchWithAuth,
+        isLoggedIn: !!token,
+        initialized,
+      }}
     >
       {children}
     </AuthContext.Provider>
