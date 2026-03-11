@@ -43,6 +43,13 @@
       "when": 1773252533361,
       "tag": "0005_overconfident_paladin",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1773267276372,
+      "tag": "0006_spotty_red_shift",
+      "breakpoints": true
     }
   ]
 }

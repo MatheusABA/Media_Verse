@@ -1,4 +1,4 @@
-import { Film, Tv, Star, List } from "lucide-react";
+import { Film, Tv, Star, List, Heart } from "lucide-react";
 
 type ProfileStatsProps = {
   stats: {
@@ -6,18 +6,40 @@ type ProfileStatsProps = {
     seriesWatched: number;
     reviewsCount: number;
     listsCount: number;
+    favoritesCount?: number;
   };
 };
 
 export function ProfileStats({ stats }: ProfileStatsProps) {
   const items = [
-    { icon: <Film size={20} color="red"/>, label: "Filmes Assistidos", value: stats.moviesWatched },
-    { icon: <Tv size={20} color="purple"/>, label: "Séries Assistidas", value: stats.seriesWatched },
-    { icon: <Star size={20} color="yellow"/>, label: "Reviews", value: stats.reviewsCount },
-    { icon: <List size={20} color="green"/>, label: "Listas", value: stats.listsCount },
+    {
+      icon: <Film size={20} color="red" />,
+      label: "Filmes Assistidos",
+      value: stats.moviesWatched,
+    },
+    {
+      icon: <Tv size={20} color="purple" />,
+      label: "Séries Assistidas",
+      value: stats.seriesWatched,
+    },
+    {
+      icon: <Heart size={20} color="red" />,
+      label: "Favoritos",
+      value: stats.favoritesCount ?? 0,
+    },
+    {
+      icon: <Star size={20} color="yellow" />,
+      label: "Reviews",
+      value: stats.reviewsCount,
+    },
+    {
+      icon: <List size={20} color="green" />,
+      label: "Listas",
+      value: stats.listsCount,
+    },
   ];
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+    <div className="grid grid-cols-2 md:grid-cols-5 mb-10 gap-4">
       {items.map(({ icon, label, value }) => (
         <div
           key={label}

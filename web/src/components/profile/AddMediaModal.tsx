@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Search, X, Star } from "lucide-react";
+import { Search, X, Heart } from "lucide-react";
 
 const IMG_BASE = "https://image.tmdb.org/t/p/w200";
 
@@ -38,6 +38,7 @@ type Props = {
     description: string | null;
     status: StatusOption;
     rating: string | null;
+    favorite: boolean;
   }) => Promise<void>;
   initialData?: {
     title: string;
@@ -46,6 +47,7 @@ type Props = {
     tmdbId: string | null;
     status: string | null;
     rating: string | null;
+    isFavorite?: boolean;
   };
 };
 
@@ -57,6 +59,7 @@ export function AddMediaModal({ open, onClose, onSave, initialData }: Props) {
   const [selected, setSelected] = useState<MediaResult | null>(null);
   const [status, setStatus] = useState<StatusOption>("watched");
   const [rating, setRating] = useState<number>(0);
+  const [isFavorite, setIsFavorite] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -64,10 +67,12 @@ export function AddMediaModal({ open, onClose, onSave, initialData }: Props) {
       setStep("rate");
       setStatus((initialData.status as StatusOption) ?? "watched");
       setRating(initialData.rating ? parseInt(initialData.rating) : 0);
+      setIsFavorite(initialData.isFavorite ?? false);
     } else if (open) {
       setStep("search");
       setStatus("watched");
       setRating(0);
+      setIsFavorite(false);
     }
   }, [open, initialData]);
 
@@ -105,6 +110,7 @@ export function AddMediaModal({ open, onClose, onSave, initialData }: Props) {
         description: null,
         status,
         rating: rating > 0 ? String(rating) : null,
+        favorite: isFavorite,
       });
     } else if (selected) {
       await onSave({
@@ -118,6 +124,7 @@ export function AddMediaModal({ open, onClose, onSave, initialData }: Props) {
         description: selected.overview || null,
         status,
         rating: rating > 0 ? String(rating) : null,
+        favorite: isFavorite,
       });
     }
     setSaving(false);
@@ -131,6 +138,7 @@ export function AddMediaModal({ open, onClose, onSave, initialData }: Props) {
     setSelected(null);
     setStatus("watched");
     setRating(0);
+    setIsFavorite(false);
     onClose();
   }
 
@@ -152,7 +160,6 @@ export function AddMediaModal({ open, onClose, onSave, initialData }: Props) {
 
         {step === "search" && (
           <div className="flex flex-col flex-1 overflow-hidden">
-            {/* Search input */}
             <div className="flex gap-2 p-4">
               <input
                 type="text"
@@ -171,7 +178,6 @@ export function AddMediaModal({ open, onClose, onSave, initialData }: Props) {
               </button>
             </div>
 
-            {/* Results */}
             <div className="flex-1 overflow-y-auto px-4 pb-4">
               {searching && (
                 <p className="text-zinc-500 text-sm">Buscando...</p>
@@ -222,38 +228,59 @@ export function AddMediaModal({ open, onClose, onSave, initialData }: Props) {
         {step === "rate" && (selected || initialData) && (
           <div className="p-4 flex flex-col gap-4">
             {/* Selected media info */}
-            <div className="flex items-center gap-3">
-              {(selected?.poster_path || initialData?.posterUrl) && (
-                <Image
-                  src={
-                    selected
-                      ? `${IMG_BASE}${selected.poster_path}`
-                      : initialData?.posterUrl || ""
-                  }
-                  alt={
-                    selected
-                      ? selected.title || selected.name || ""
-                      : initialData?.title || ""
-                  }
-                  width={60}
-                  height={90}
-                  className="rounded object-cover"
-                  unoptimized
-                />
-              )}
-              <div>
-                <p className="font-extrabold text-white">
-                  {selected
-                    ? selected.title || selected.name
-                    : initialData?.title}
-                </p>
-                <p className="text-xs text-zinc-500">
-                  {(selected ? selected.media_type : initialData?.type) ===
-                  "movie"
-                    ? "Filme"
-                    : "Série"}
-                </p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {(selected?.poster_path || initialData?.posterUrl) && (
+                  <Image
+                    src={
+                      selected
+                        ? `${IMG_BASE}${selected.poster_path}`
+                        : initialData?.posterUrl || ""
+                    }
+                    alt={
+                      selected
+                        ? selected.title || selected.name || ""
+                        : initialData?.title || ""
+                    }
+                    width={60}
+                    height={90}
+                    className="rounded object-cover"
+                    unoptimized
+                  />
+                )}
+                <div>
+                  <p className="font-extrabold text-white">
+                    {selected
+                      ? selected.title || selected.name
+                      : initialData?.title}
+                  </p>
+                  <p className="text-xs text-zinc-500">
+                    {(selected ? selected.media_type : initialData?.type) ===
+                    "movie"
+                      ? "Filme"
+                      : "Série"}
+                  </p>
+                </div>
               </div>
+              {/* Favorite heart */}
+              <button
+                type="button"
+                onClick={() => setIsFavorite((v) => !v)}
+                title={
+                  isFavorite ? "Remover dos favoritos" : "Marcar como favorito"
+                }
+                className="flex flex-col items-center gap-0.5 p-2 rounded-lg hover:bg-zinc-800 transition"
+              >
+                <Heart
+                  size={28}
+                  className={
+                    isFavorite ? "text-red-500 fill-red-500" : "text-zinc-500"
+                  }
+                />
+                <span className="text-xs text-zinc-500">
+                  {isFavorite ? "Favorito" : "Favoritar"}
+                </span>
+              </button>
             </div>
 
             {/* Status */}
@@ -302,12 +329,14 @@ export function AddMediaModal({ open, onClose, onSave, initialData }: Props) {
 
             {/* Actions */}
             <div className="flex gap-2 justify-end mt-2">
-              <button
-                onClick={() => setStep("search")}
-                className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm font-bold text-zinc-300"
-              >
-                Voltar
-              </button>
+              {!initialData && (
+                <button
+                  onClick={() => setStep("search")}
+                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm font-bold text-zinc-300"
+                >
+                  Voltar
+                </button>
+              )}
               <button
                 onClick={handleSave}
                 disabled={saving}
