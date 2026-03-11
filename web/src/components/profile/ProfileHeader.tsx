@@ -14,6 +14,7 @@ type ProfileHeaderProps = {
   memberSince: string;
   onAvatarChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   avatarUploading?: boolean;
+  actionButton?: React.ReactNode;
 };
 
 export function ProfileHeader({
@@ -21,11 +22,12 @@ export function ProfileHeader({
   memberSince,
   onAvatarChange,
   avatarUploading = false,
+  actionButton,
 }: ProfileHeaderProps) {
   const [hovered, setHovered] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   return (
-    <div className="flex items-end gap-6 mb-8 pb-8 border-b border-zinc-800">
+    <div className="flex items-end gap-6 mb-8 pb-8 border-b border-zinc-800 relative">
       <div
         className="relative w-24 h-24 rounded-full bg-zinc-700 border-4 border-zinc-600 flex items-center justify-center shrink-0 shadow-xl overflow-hidden group"
         onMouseEnter={() => setHovered(true)}
@@ -114,6 +116,9 @@ export function ProfileHeader({
           </span>
         </div>
       </div>
+      {actionButton && (
+        <div className="absolute right-0 bottom-8">{actionButton}</div>
+      )}
     </div>
   );
 }

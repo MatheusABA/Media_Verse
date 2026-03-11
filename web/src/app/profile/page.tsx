@@ -3,15 +3,28 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { User, MapPin, Calendar, Film, Tv, Star, List } from "lucide-react";
+import { User } from "lucide-react";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { ProfileData } from "@/src/types/user";
 import { ProfileHeader } from "@/src/components/profile/ProfileHeader";
 import { ProfileStats } from "@/src/components/profile/ProfileStats";
 import { ReviewedSection } from "@/src/components/profile/ReviewedSection";
+import { AddMediaModal } from "@/src/components/profile/AddMediaModal";
 import { uploadAvatar } from "@/src/lib/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+type UserMediaItem = {
+  id: string;
+  title: string;
+  type: string;
+  posterUrl: string | null;
+  tmdbId: string | null;
+  status: string | null;
+  rating: string | null;
+  watchedAt: string | null;
+  createdAt: string;
+};
 
 export default function ProfilePage() {
   const { token, isLoggedIn, initialized, fetchWithAuth, updateUser } =
@@ -19,6 +32,8 @@ export default function ProfilePage() {
   const [data, setData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [recentMedia, setRecentMedia] = useState<UserMediaItem[]>([]);
 
   useEffect(() => {
     if (!token) return;
@@ -41,11 +56,18 @@ export default function ProfilePage() {
       .finally(() => setLoading(false));
   }, [token, fetchWithAuth]);
 
+  useEffect(() => {
+    if (!token) return;
+    fetchWithAuth(`${API_URL}/user-media`)
+      .then((r) => r.json())
+      .then(setRecentMedia)
+      .catch(() => {});
+  }, [token, fetchWithAuth]);
+
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !token) return;
     setAvatarUploading(true);
-
     try {
       const { avatarUrl } = await uploadAvatar(file, token);
       setData((prev) =>
@@ -56,6 +78,26 @@ export default function ProfilePage() {
       alert("Erro ao enviar imagem");
     }
     setAvatarUploading(false);
+  }
+
+  async function handleAddMedia(mediaData: {
+    tmdbId: string;
+    type: "movie" | "tv";
+    title: string;
+    posterUrl: string | null;
+    releaseDate: string | null;
+    description: string | null;
+    status: string;
+    rating: string | null;
+  }) {
+    const res = await fetchWithAuth(`${API_URL}/user-media`, {
+      method: "POST",
+      body: JSON.stringify(mediaData),
+    });
+    if (res.ok) {
+      const listRes = await fetchWithAuth(`${API_URL}/user-media`);
+      if (listRes.ok) setRecentMedia(await listRes.json());
+    }
   }
 
   if (!isLoggedIn) {
@@ -91,23 +133,72 @@ export default function ProfilePage() {
     year: "numeric",
   });
 
+  const STATUS_LABELS: Record<string, string> = {
+    plan_to_watch: "Pretendo assistir",
+    watching: "Assistindo",
+    watched: "Assistido",
+    dropped: "Desistiu",
+  };
+
   return (
     <div>
-      <div className="flex justify-end mb-6">
-        <Link
-          href="/reviews/new"
-          className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-extrabold rounded-full shadow-lg transition text-sm uppercase"
-        >
-          Fazer review
-        </Link>
-      </div>
       <ProfileHeader
         user={user}
         memberSince={memberSince}
         onAvatarChange={handleAvatarChange}
         avatarUploading={avatarUploading}
+        actionButton={
+          <button
+            onClick={() => setModalOpen(true)}
+            className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-extrabold rounded-full shadow-lg transition text-sm uppercase"
+          >
+            Adicionar mídia
+          </button>
+        }
       />
       <ProfileStats stats={stats} />
+
+      {/* Últimos Vistos */}
+      {recentMedia.length > 0 && (
+        <section className="mb-8">
+          <h2 className="text-xl font-extrabold mb-4">Últimos adicionados</h2>
+          <div className="flex gap-4 overflow-x-auto pb-2">
+            {recentMedia.slice(0, 10).map((item) => (
+              <Link
+                key={item.id}
+                href={`/${item.type === "movie" ? "movie" : "serie"}/${item.tmdbId}`}
+                className="shrink-0 w-36 group"
+              >
+                <div className="relative w-36 h-52 rounded-lg overflow-hidden bg-zinc-800">
+                  {item.posterUrl ? (
+                    <Image
+                      src={item.posterUrl}
+                      alt={item.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-zinc-600 text-xs">
+                      Sem poster
+                    </div>
+                  )}
+                  {item.rating && (
+                    <span className="absolute top-1 right-1 bg-yellow-500 text-black text-xs font-extrabold px-1.5 py-0.5 rounded">
+                      {item.rating}
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm font-bold mt-1 truncate">{item.title}</p>
+                <p className="text-xs text-zinc-500">
+                  {STATUS_LABELS[item.status ?? ""] ?? item.status}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       <ReviewedSection
         title="Filmes Favoritos"
         items={reviewedMovies}
@@ -117,6 +208,12 @@ export default function ProfilePage() {
         title="Séries Favoritas"
         items={reviewedSeries}
         type="tv"
+      />
+
+      <AddMediaModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSave={handleAddMedia}
       />
     </div>
   );

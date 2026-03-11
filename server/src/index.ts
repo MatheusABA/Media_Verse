@@ -4,6 +4,7 @@ import { userRoutes } from "./routes/user.routes";
 import cors from "@elysiajs/cors";
 import staticPlugin from "@elysiajs/static";
 import { uploadRoutes } from "./routes/upload.routes";
+import { userMediaRoutes } from "./routes/user_media.routes";
 
 const app = new Elysia()
   .use(cors({
@@ -19,6 +20,7 @@ const app = new Elysia()
   .use(authRoutes)
   .use(userRoutes)
   .use(uploadRoutes)
+  .use(userMediaRoutes)
   .listen(3333);
 
 console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`);

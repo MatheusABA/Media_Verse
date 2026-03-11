@@ -68,7 +68,7 @@ export function Sidebar() {
           <div className="flex flex-col gap-4">
             <Link
               href="/profile"
-              className={`w-full flex items-center border-zinc-400 bg-zinc-900 text-zinc-100 font-extrabold hover:bg-zinc-100 hover:text-black transition-all uppercase rounded-md
+              className={`w-full flex items-center border-zinc-400 bg-zinc-900 text-zinc-100 font-extrabold hover:bg-zinc-100 hover:text-black transition-all rounded-md
                 ${!expanded ? "justify-center px-0" : "gap-2 hover:p-1"}`}
               title={!expanded ? "Perfil" : undefined}
             >
@@ -84,7 +84,7 @@ export function Sidebar() {
               ) : (
                 <User size={22} />
               )}
-              {expanded && <span>{user?.username}</span>}
+              {expanded && <span>@{user?.username}</span>}
             </Link>
             <button
               onClick={logout}

@@ -17,8 +17,8 @@ async function tmdbFetch<T>(path: string): Promise<T> {
 
 export type MediaItem = {
   id: number
-  title?: string         
-  name?: string         
+  title?: string
+  name?: string
   poster_path: string | null
   backdrop_path: string | null
   vote_average: number
@@ -98,3 +98,16 @@ export const getSimilarMovies = (id: string) =>
 
 export const getSimilarSeries = (id: string) =>
   tmdbFetch<TMDBResponse>(`/tv/${id}/similar`).then((r) => r.results)
+
+export const searchMulti = async (query: string): Promise<MediaItem[]> => {
+  const url = `${BASE_URL}/search/multi?language=pt-BR&api_key=${API_KEY}&query=${encodeURIComponent(query)}`;
+  const res = await fetch(url, {
+    headers: { accept: "application/json" },
+    next: { revalidate: 0 },
+  });
+  if (!res.ok) throw new Error(`TMDB error: ${res.status}`);
+  const data: TMDBResponse = await res.json();
+  return data.results.filter(
+    (item) => item.media_type === "movie" || item.media_type === "tv",
+  );
+};
