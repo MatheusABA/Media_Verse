@@ -88,11 +88,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     init: RequestInit = {},
   ): Promise<Response> {
     const currentToken = localStorage.getItem("accessToken");
-    const headers = {
-      ...init.headers,
+    const headers: Record<string, string> = {
+      ...(init.headers as Record<string, string>),
       Authorization: `Bearer ${currentToken}`,
-      "Content-Type": "application/json",
     };
+
+    if (!(init.body instanceof FormData)) {
+      headers["Content-Type"] = "application/json";
+    }
 
     const res = await fetch(input, { ...init, headers });
 
@@ -100,14 +103,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const newToken = await refreshAccessToken();
       if (!newToken) return res;
 
-      return fetch(input, {
-        ...init,
-        headers: {
-          ...init.headers,
-          Authorization: `Bearer ${newToken}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const retryHeaders: Record<string, string> = {
+        ...(init.headers as Record<string, string>),
+        Authorization: `Bearer ${newToken}`,
+      };
+      if (!(init.body instanceof FormData)) {
+        retryHeaders["Content-Type"] = "application/json";
+      }
+
+      return fetch(input, { ...init, headers: retryHeaders });
     }
 
     return res;

@@ -1,6 +1,6 @@
 import { Elysia } from "elysia"
 import { authPlugin } from "../plugins/auth.plugin"
-import { getUserById, getUserProfile } from "../services/user.service"
+import { getUserById, getUserProfile } from "../services/user.services"
 
 export const userRoutes = new Elysia({ prefix: "/user" })
   .use(authPlugin)

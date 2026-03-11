@@ -10,6 +10,7 @@ export const users = pgTable("users", {
   name: text("name"),
   bio: text("bio"),
   avatarUrl: text("avatar_url"),
+  bannerUrl: text("banner_url"),
   location: text("location"),
 
   createdAt: timestamp("created_at").defaultNow().notNull(),
