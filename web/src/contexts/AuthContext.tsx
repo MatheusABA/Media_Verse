@@ -38,12 +38,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setInitialized(true);
   }, []);
 
-  function login(accessToken: string, refreshToken: string, user: User) {
+  async function login(accessToken: string, refreshToken: string, user: User) {
     setToken(accessToken);
     setUser(user);
     localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("refreshToken", refreshToken);
-    localStorage.setItem("user", JSON.stringify(user));
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/user/me/profile`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        },
+      );
+      if (res.ok) {
+        const profileData = await res.json();
+        setUser(profileData.user);
+        localStorage.setItem("user", JSON.stringify(profileData.user));
+      } else {
+        setUser(user);
+        localStorage.setItem("user", JSON.stringify(user));
+      }
+    } catch {
+      setUser(user);
+      localStorage.setItem("user", JSON.stringify(user));
+    }
   }
 
   async function logout() {

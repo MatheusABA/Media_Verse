@@ -11,6 +11,7 @@ import { ProfileStats } from "@/src/components/profile/ProfileStats";
 import { ReviewedSection } from "@/src/components/profile/ReviewedSection";
 import { AddMediaModal } from "@/src/components/profile/AddMediaModal";
 import { uploadAvatar } from "@/src/lib/api";
+import { Pencil } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -34,6 +35,7 @@ export default function ProfilePage() {
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [recentMedia, setRecentMedia] = useState<UserMediaItem[]>([]);
+  const [editMedia, setEditMedia] = useState<UserMediaItem | null>(null);
 
   useEffect(() => {
     if (!token) return;
@@ -159,6 +161,17 @@ export default function ProfilePage() {
       <ProfileStats stats={stats} />
 
       {/* Últimos Vistos */}
+
+      <ReviewedSection
+        title="Filmes Favoritos"
+        items={reviewedMovies}
+        type="movie"
+      />
+      <ReviewedSection
+        title="Séries Favoritas"
+        items={reviewedSeries}
+        type="tv"
+      />
       {recentMedia.length > 0 && (
         <section className="mb-8">
           <h2 className="text-xl font-extrabold mb-4">Últimos adicionados</h2>
@@ -184,11 +197,38 @@ export default function ProfilePage() {
                     </div>
                   )}
                   {item.rating && (
-                    <span className="absolute top-1 right-1 bg-yellow-500 text-black text-xs font-extrabold px-1.5 py-0.5 rounded">
-                      {item.rating}
-                    </span>
+                    <>
+                      <span
+                        className={`absolute top-1 left-1 px-2 py-0.5 rounded text-xs font-bold
+                                  ${item.type === "movie" ? "bg-blue-600" : "bg-purple-600"} text-white`}
+                      >
+                        {item.type === "movie" ? "Filme" : "Série"}
+                      </span>
+                      <span className="absolute top-1 right-1 bg-yellow-500 text-black text-xs font-extrabold px-1.5 py-0.5 rounded">
+                        {item.rating}
+                      </span>
+                    </>
                   )}
+                  <button
+                    className="absolute bottom-1 right-1 ..."
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setEditMedia(item);
+                    }}
+                  >
+                    <Pencil size={16} />
+                  </button>
                 </div>
+                <button
+                  className="absolute bottom-1 right-1 p-1 bg-zinc-800 rounded-full hover:bg-zinc-700 z-10"
+                  title="Editar avaliação"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setEditMedia(item);
+                  }}
+                >
+                  <Pencil size={16} className="text-zinc-300" />
+                </button>
                 <p className="text-sm font-bold mt-1 truncate">{item.title}</p>
                 <p className="text-xs text-zinc-500">
                   {STATUS_LABELS[item.status ?? ""] ?? item.status}
@@ -199,21 +239,19 @@ export default function ProfilePage() {
         </section>
       )}
 
-      <ReviewedSection
-        title="Filmes Favoritos"
-        items={reviewedMovies}
-        type="movie"
-      />
-      <ReviewedSection
-        title="Séries Favoritas"
-        items={reviewedSeries}
-        type="tv"
-      />
-
       <AddMediaModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSave={handleAddMedia}
+        open={modalOpen || !!editMedia}
+        onClose={() => {
+          setModalOpen(false);
+          setEditMedia(null);
+        }}
+        onSave={async (mediaData) => {
+          await handleAddMedia(
+            editMedia ? { ...mediaData, id: editMedia.id } : mediaData,
+          );
+          setEditMedia(null);
+        }}
+        initialData={editMedia || undefined}
       />
     </div>
   );

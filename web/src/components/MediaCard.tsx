@@ -15,7 +15,7 @@ export function MediaCard({ item }: { item: MediaItem }) {
     <Link href={href} className="group shrink-0 w-36 md:w-44">
       <div className="relative w-full aspect-2/3 rounded-xl overflow-hidden border-2 border-transparent group-hover:border-zinc-400 transition-all shadow-lg">
         {/* Tag do tipo */}
-        <span className="absolute top-2 left-2 z-10 bg-zinc-900/80 text-xs text-white font-bold px-2 py-0.5 rounded-full shadow">
+        <span className="absolute top-2 left-2 z-10 bg-green-700/80 text-xs text-white font-bold px-2 py-0.5 rounded-full shadow">
           {typeLabel}
         </span>
         {item.poster_path ? (

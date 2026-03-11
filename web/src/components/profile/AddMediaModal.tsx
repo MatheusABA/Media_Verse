@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Search, X, Star } from "lucide-react";
 
@@ -39,9 +39,17 @@ type Props = {
     status: StatusOption;
     rating: string | null;
   }) => Promise<void>;
+  initialData?: {
+    title: string;
+    type: string;
+    posterUrl: string | null;
+    tmdbId: string | null;
+    status: string | null;
+    rating: string | null;
+  };
 };
 
-export function AddMediaModal({ open, onClose, onSave }: Props) {
+export function AddMediaModal({ open, onClose, onSave, initialData }: Props) {
   const [step, setStep] = useState<"search" | "rate">("search");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<MediaResult[]>([]);
@@ -51,13 +59,27 @@ export function AddMediaModal({ open, onClose, onSave }: Props) {
   const [rating, setRating] = useState<number>(0);
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    if (open && initialData) {
+      setStep("rate");
+      setStatus((initialData.status as StatusOption) ?? "watched");
+      setRating(initialData.rating ? parseInt(initialData.rating) : 0);
+    } else if (open) {
+      setStep("search");
+      setStatus("watched");
+      setRating(0);
+    }
+  }, [open, initialData]);
+
   if (!open) return null;
 
   async function handleSearch() {
     if (!query.trim()) return;
     setSearching(true);
     try {
-      const res = await fetch(`/api/tmdb/search?q=${encodeURIComponent(query)}`);
+      const res = await fetch(
+        `/api/tmdb/search?q=${encodeURIComponent(query)}`,
+      );
       const data = await res.json();
       setResults(data.results ?? []);
     } catch {
@@ -72,18 +94,32 @@ export function AddMediaModal({ open, onClose, onSave }: Props) {
   }
 
   async function handleSave() {
-    if (!selected) return;
     setSaving(true);
-    await onSave({
-      tmdbId: String(selected.id),
-      type: selected.media_type,
-      title: selected.title || selected.name || "",
-      posterUrl: selected.poster_path ? `${IMG_BASE}${selected.poster_path}` : null,
-      releaseDate: selected.release_date || selected.first_air_date || null,
-      description: selected.overview || null,
-      status,
-      rating: rating > 0 ? String(rating) : null,
-    });
+    if (initialData) {
+      await onSave({
+        tmdbId: initialData.tmdbId ?? "",
+        type: initialData.type as "movie" | "tv",
+        title: initialData.title,
+        posterUrl: initialData.posterUrl,
+        releaseDate: null,
+        description: null,
+        status,
+        rating: rating > 0 ? String(rating) : null,
+      });
+    } else if (selected) {
+      await onSave({
+        tmdbId: String(selected.id),
+        type: selected.media_type,
+        title: selected.title || selected.name || "",
+        posterUrl: selected.poster_path
+          ? `${IMG_BASE}${selected.poster_path}`
+          : null,
+        releaseDate: selected.release_date || selected.first_air_date || null,
+        description: selected.overview || null,
+        status,
+        rating: rating > 0 ? String(rating) : null,
+      });
+    }
     setSaving(false);
     handleClose();
   }
@@ -106,7 +142,10 @@ export function AddMediaModal({ open, onClose, onSave }: Props) {
           <h2 className="text-lg font-extrabold">
             {step === "search" ? "Buscar filme ou série" : "Avaliar"}
           </h2>
-          <button onClick={handleClose} className="text-zinc-400 hover:text-white">
+          <button
+            onClick={handleClose}
+            className="text-zinc-400 hover:text-white"
+          >
             <X size={20} />
           </button>
         </div>
@@ -134,7 +173,9 @@ export function AddMediaModal({ open, onClose, onSave }: Props) {
 
             {/* Results */}
             <div className="flex-1 overflow-y-auto px-4 pb-4">
-              {searching && <p className="text-zinc-500 text-sm">Buscando...</p>}
+              {searching && (
+                <p className="text-zinc-500 text-sm">Buscando...</p>
+              )}
               {results.map((item) => (
                 <button
                   key={`${item.media_type}-${item.id}`}
@@ -161,26 +202,39 @@ export function AddMediaModal({ open, onClose, onSave }: Props) {
                     </p>
                     <p className="text-xs text-zinc-500">
                       {item.media_type === "movie" ? "Filme" : "Série"} ·{" "}
-                      {(item.release_date || item.first_air_date || "").slice(0, 4)}
+                      {(item.release_date || item.first_air_date || "").slice(
+                        0,
+                        4,
+                      )}
                     </p>
                   </div>
                 </button>
               ))}
               {!searching && results.length === 0 && query && (
-                <p className="text-zinc-500 text-sm">Nenhum resultado encontrado.</p>
+                <p className="text-zinc-500 text-sm">
+                  Nenhum resultado encontrado.
+                </p>
               )}
             </div>
           </div>
         )}
 
-        {step === "rate" && selected && (
+        {step === "rate" && (selected || initialData) && (
           <div className="p-4 flex flex-col gap-4">
             {/* Selected media info */}
             <div className="flex items-center gap-3">
-              {selected.poster_path && (
+              {(selected?.poster_path || initialData?.posterUrl) && (
                 <Image
-                  src={`${IMG_BASE}${selected.poster_path}`}
-                  alt={selected.title || selected.name || ""}
+                  src={
+                    selected
+                      ? `${IMG_BASE}${selected.poster_path}`
+                      : initialData?.posterUrl || ""
+                  }
+                  alt={
+                    selected
+                      ? selected.title || selected.name || ""
+                      : initialData?.title || ""
+                  }
                   width={60}
                   height={90}
                   className="rounded object-cover"
@@ -189,11 +243,15 @@ export function AddMediaModal({ open, onClose, onSave }: Props) {
               )}
               <div>
                 <p className="font-extrabold text-white">
-                  {selected.title || selected.name}
+                  {selected
+                    ? selected.title || selected.name
+                    : initialData?.title}
                 </p>
                 <p className="text-xs text-zinc-500">
-                  {selected.media_type === "movie" ? "Filme" : "Série"} ·{" "}
-                  {(selected.release_date || selected.first_air_date || "").slice(0, 4)}
+                  {(selected ? selected.media_type : initialData?.type) ===
+                  "movie"
+                    ? "Filme"
+                    : "Série"}
                 </p>
               </div>
             </div>
