@@ -9,7 +9,6 @@ export function MediaCard({ item }: { item: MediaItem }) {
   const type = isSerie ? "serie" : "movie";
   const href = `/${type}/${item.id}`;
 
-  // Texto amigável para exibir
   const typeLabel = isSerie ? "Série" : "Filme";
 
   return (
