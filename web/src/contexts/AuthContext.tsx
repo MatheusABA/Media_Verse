@@ -11,12 +11,13 @@ type User = {
 }
 
 type AuthContextType = {
-  user: User | null
-  token: string | null
-  login: (token: string, user: User) => void
-  logout: () => void
-  isLoggedIn: boolean
-}
+  user: User | null;
+  token: string | null;
+  login: (accessToken: string, refreshToken: string, user: User) => void;
+  logout: () => void;
+  fetchWithAuth: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
+  isLoggedIn: boolean;
+};
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType)
 
@@ -25,7 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null)
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("token")
+    const storedToken = localStorage.getItem("accessToken");
     const storedUser = localStorage.getItem("user")
     if (storedToken && storedUser) {
       setToken(storedToken)
@@ -33,25 +34,90 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  function login(token: string, user: User) {
-    setToken(token)
-    setUser(user)
-    localStorage.setItem("token", token)
-    localStorage.setItem("user", JSON.stringify(user))
+  function login(accessToken: string, refreshToken: string, user: User) {
+    setToken(accessToken);
+    setUser(user);
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
+    localStorage.setItem("user", JSON.stringify(user));
   }
 
-  function logout() {
-    setToken(null)
-    setUser(null)
-    localStorage.removeItem("token")
-    localStorage.removeItem("user")
+  async function logout() {
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (refreshToken) {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken }),
+      }).catch(() => {});
+    }
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user");
+  }
+
+  async function refreshAccessToken(): Promise<string | null> {
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (!refreshToken) return null;
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (!res.ok) {
+      // Refresh token expirado ou inválido — força logout
+      await logout();
+      return null;
+    }
+
+    const data = await res.json();
+    setToken(data.accessToken);
+    localStorage.setItem("accessToken", data.accessToken);
+    localStorage.setItem("refreshToken", data.refreshToken);
+    return data.accessToken;
+  }
+
+  async function fetchWithAuth(
+    input: RequestInfo,
+    init: RequestInit = {},
+  ): Promise<Response> {
+    const currentToken = localStorage.getItem("accessToken");
+    const headers = {
+      ...init.headers,
+      Authorization: `Bearer ${currentToken}`,
+      "Content-Type": "application/json",
+    };
+
+    const res = await fetch(input, { ...init, headers });
+
+    if (res.status === 401) {
+      const newToken = await refreshAccessToken();
+      if (!newToken) return res;
+
+      return fetch(input, {
+        ...init,
+        headers: {
+          ...init.headers,
+          Authorization: `Bearer ${newToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+    }
+
+    return res;
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isLoggedIn: !!token }}>
+    <AuthContext.Provider
+      value={{ user, token, login, logout, fetchWithAuth, isLoggedIn: !!token }}
+    >
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
 export const useAuth = () => useContext(AuthContext)

@@ -28,7 +28,7 @@ export default function LoginPage() {
         setError(data.error || "Erro ao fazer login")
         return
       }
-      login(data.token, data.user)
+      login(data.accessToken, data.refreshToken, data.user);
       router.push("/")
     } catch {
       setError("Erro ao conectar com o servidor")

@@ -92,14 +92,16 @@ export function Sidebar() {
           <div className="flex flex-col gap-2">
             <Link
               href="/login"
-              className="w-full border-zinc-400 bg-zinc-900 text-zinc-100 font-extrabold py-2 hover:bg-zinc-100 hover:text-black transition-all uppercase text-center rounded-md"
+              className={`w-full border-zinc-400 bg-zinc-900 text-zinc-100 font-extrabold py-2 hover:bg-zinc-100 hover:text-black transition-all uppercase text-center rounded-md
+                ${!expanded ? "flex justify-center items-center py-3" : ""}`}
               title={!expanded ? "Entrar" : undefined}
             >
               {expanded ? "Entrar" : <LogIn size={22} />}
             </Link>
             <Link
               href="/register"
-              className="w-full border-zinc-400 bg-zinc-00 text-white font-extrabold py-2 transition-all uppercase text-center rounded-md"
+              className={`w-full border-zinc-400 bg-zinc-900 text-white font-extrabold py-2 hover:bg-zinc-100 hover:text-black transition-all uppercase text-center rounded-md
+                ${!expanded ? "flex justify-center items-center py-3" : ""}`}
               title={!expanded ? "Cadastrar" : undefined}
             >
               {expanded ? "Cadastrar" : <Plus size={22} />}
