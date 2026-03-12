@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { X, Star } from "lucide-react";
 
@@ -44,6 +44,10 @@ export function TopMediaModal({
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
   const [selectedPosition, setSelectedPosition] = useState<number>(1);
   const [saving, setSaving] = useState(false);
+  const [search, setSearch] = useState("");
+  const [searchResults, setSearchResults] = useState<MediaItem[]>([]);
+  const [searching, setSearching] = useState(false);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const filteredMedia = mediaList.filter((m) => m.type === type);
 
@@ -72,6 +76,33 @@ export function TopMediaModal({
     return currentTop.find((item) => item.position === pos);
   };
 
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearch(value);
+    setSearching(true);
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      if (value.trim() === "") {
+        setSearchResults([]);
+        setSearching(false);
+        return;
+      }
+      setSearchResults(
+        filteredMedia.filter((m) =>
+          m.title.toLowerCase().includes(value.toLowerCase()),
+        ),
+      );
+      setSearching(false);
+    }, 400);
+  };
+
+  const handleClear = () => {
+    setSearch("");
+    setSearchResults([]);
+    setSearching(false);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
       <div className="bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col border border-zinc-700">
@@ -89,6 +120,50 @@ export function TopMediaModal({
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {/* Busca */}
+          <div>
+            <label className="block text-sm font-bold mb-2 text-zinc-300">
+              Busca:
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={search}
+                onChange={handleSearch}
+                className="w-full p-2 border border-zinc-700 rounded-lg"
+              />
+              {search && (
+                <button
+                  onClick={handleClear}
+                  className="px-3 py-2 bg-zinc-700 text-white rounded-lg font-bold"
+                  title="Limpar busca"
+                >
+                  Limpar
+                </button>
+              )}
+            </div>
+            {searching && (
+              <div className="mt-2 text-zinc-400 text-xs">Buscando...</div>
+            )}
+            {search && searchResults.length === 0 && !searching && (
+              <div className="mt-2 text-zinc-400 text-xs">
+                Nenhum resultado encontrado.
+              </div>
+            )}
+            {searchResults.length > 0 && (
+              <div className="mt-2 max-h-40 overflow-y-auto">
+                {searchResults.map((result) => (
+                  <button
+                    key={result.id}
+                    onClick={() => setSelectedMedia(result)}
+                    className="w-full p-2 border border-zinc-700 rounded-lg text-left"
+                  >
+                    {result.title}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           {/* Seletor de Posição */}
           <div>
             <label className="block text-sm font-bold mb-2 text-zinc-300">
@@ -139,16 +214,20 @@ export function TopMediaModal({
           {/* Lista de Mídias */}
           <div>
             <label className="block text-sm font-bold mb-2 text-zinc-300">
-              Escolha {type === "movie" ? "um filme" : "uma série"}:
+              Escolha{" "}
+              {type === "movie"
+                ? "um dos últimos filmes avaliados"
+                : "uma das últimas séries avaliadas"}
+              :
             </label>
-            {filteredMedia.length === 0 ? (
+            {(search ? searchResults : filteredMedia).length === 0 ? (
               <p className="text-zinc-500 text-sm italic">
                 Você ainda não adicionou nenhum{" "}
                 {type === "movie" ? "filme" : "série"} à sua lista.
               </p>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-96 overflow-y-auto">
-                {filteredMedia.map((media) => {
+              <div className="grid grid-cols-5 md:grid-cols-5 gap-2 max-h-80 overflow-y-auto">
+                {(search ? searchResults : filteredMedia).map((media) => {
                   const isSelected = selectedMedia?.id === media.id;
                   const isInTop = currentTop.some(
                     (item) => item.mediaId === media.id,
@@ -158,7 +237,7 @@ export function TopMediaModal({
                       key={media.id}
                       onClick={() => setSelectedMedia(media)}
                       className={`
-                        relative rounded-lg overflow-hidden border-2 transition
+                        relative rounded-lg overflow-hidden border-2 transition flex flex-col items-center w-full
                         ${
                           isSelected
                             ? "border-purple-500 ring-2 ring-purple-500"
@@ -168,14 +247,14 @@ export function TopMediaModal({
                         }
                       `}
                     >
-                      <div className="relative w-full aspect-2/3">
+                      <div className="relative w-20 aspect-2/3">
                         {media.posterUrl ? (
                           <Image
                             src={media.posterUrl}
                             alt={media.title}
                             fill
                             className="object-cover"
-                            sizes="200px"
+                            sizes="80px"
                           />
                         ) : (
                           <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-zinc-500 text-xs">
@@ -194,7 +273,7 @@ export function TopMediaModal({
                           </div>
                         )}
                       </div>
-                      <p className="p-2 text-xs font-semibold truncate text-zinc-200">
+                      <p className="w-full px-1 py-1 text-[11px] font-semibold truncate text-zinc-200 text-center bg-zinc-900/60">
                         {media.title}
                       </p>
                     </button>
