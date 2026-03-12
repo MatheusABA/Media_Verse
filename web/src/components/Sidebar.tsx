@@ -23,14 +23,52 @@ import Image from "next/image";
 import { getFullUrl } from "../utils/imageUrl";
 
 const navItems = [
-  { href: "/", label: "Home", icon: <House size={22} /> },
-  { href: "/feed", label: "Feed", icon: <Newspaper size={22} /> },
-  { href: "/trending", label: "Trending", icon: <Flame size={22} /> },
-  { href: "/discover", label: "Descobrir", icon: <Search size={22} /> },
-  { href: "/favorites", label: "Favoritos", icon: <Heart size={22} /> },
-  { href: "/reviews", label: "Minhas Reviews", icon: <Star size={22} /> },
-  { href: "/lists", label: "Minhas Listas", icon: <FolderOpen size={22} /> },
+  {
+    href: "/",
+    label: "Home",
+    icon: (color: string) => <House size={22} color={color} />,
+  },
+  {
+    href: "/feed",
+    label: "Feed",
+    icon: (color: string) => <Newspaper size={22} color={color} />,
+  },
+  {
+    href: "/trending",
+    label: "Trending",
+    icon: (color: string) => <Flame size={22} color={color} />,
+  },
+  {
+    href: "/discover",
+    label: "Descobrir",
+    icon: (color: string) => <Search size={22} color={color} />,
+  },
+  {
+    href: "/favorites",
+    label: "Favoritos",
+    icon: (color: string) => <Heart size={22} color={color} />,
+  },
+  {
+    href: "/reviews",
+    label: "Minhas Reviews",
+    icon: (color: string) => <Star size={22} color={color} />,
+  },
+  {
+    href: "/lists",
+    label: "Minhas Listas",
+    icon: (color: string) => <FolderOpen size={22} color={color} />,
+  },
 ];
+
+const iconActiveColors: Record<string, string> = {
+  "/": "#60a5fa", // home: azul claro
+  "/feed": "#4ade80", // feed: verde claro
+  "/trending": "#f59e42", // trending: laranja
+  "/discover": "#a16207", // descobrir: marrom
+  "/favorites": "#ef4444", // favoritos: vermelho
+  "/reviews": "#facc15", // reviews: amarelo
+  "/lists": "#a78bfa", // lista: roxo
+};
 
 export function Sidebar() {
   const { isLoggedIn, user, logout } = useAuth();
@@ -62,6 +100,9 @@ export function Sidebar() {
       <nav className="flex flex-col gap-1 mt-4 flex-1 px-2">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
+          const iconColor = isActive
+            ? iconActiveColors[item.href] || "#a1a1aa"
+            : "#a1a1aa";
           return (
             <Link
               key={item.href}
@@ -72,7 +113,7 @@ export function Sidebar() {
               ${isActive ? "bg-zinc-700 text-white" : "text-zinc-400"}
               ${!expanded && "justify-center px-0"}`}
             >
-              {item.icon}
+              {item.icon(iconColor)}
               {expanded && <span>{item.label}</span>}
             </Link>
           );
