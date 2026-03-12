@@ -1,5 +1,11 @@
 import Image from "next/image";
-import { MapPin, Calendar, Camera } from "lucide-react";
+import {
+  Clapperboard,
+  TvMinimalPlay,
+  MapPin,
+  Calendar,
+  Camera,
+} from "lucide-react";
 import { useRef, useState } from "react";
 import { getFullUrl } from "@/src/utils/imageUrl";
 import { ProfileStatsProps } from "./ProfileStats";
@@ -165,40 +171,68 @@ export function ProfileHeader({
         </div>
 
         {/* Info do usuário */}
-        <div className="flex-1 flex flex-col gap-1 pt-10">
-          <h1 className="text-3xl font-extrabold leading-tight">
-            {user.username}
-          </h1>
-          {user.bio && (
-            <p className="text-zinc-400 text-sm max-w-md">{user.bio}</p>
-          )}
-          <div className="flex flex-wrap gap-4 mt-1 text-xs text-white">
-            {user.location && (
-              <span className="flex items-center gap-1">
-                <MapPin size={12} /> {user.location}
-              </span>
+        <div className="flex-1 flex flex-row items-end">
+          {/* Bloco principal: username, bio, localização, etc. */}
+          <div className="flex flex-col gap-1">
+            <h1 className="text-3xl font-extrabold leading-tight">
+              @{user.username}
+            </h1>
+            {user.bio && (
+              <p className="text-zinc-400 text-sm max-w-md">{user.bio}</p>
             )}
-            <span className="flex items-center gap-1">
-              <Calendar size={12} /> Membro desde {memberSince}
-            </span>
-          </div>
-          <div className="flex flex-colwstart gap-5 mt-1 text-sm">
-            <div className="flexow items-center gap-1">
-              <span className="font-bold">{stats.moviesWatched}</span>
-              <span className="text-xs text-zinc-500">Seguidores</span>
+            <div className="flex flex-wrap gap-4 mt-1 text-xs text-white">
+              {user.location && (
+                <span className="flex items-center gap-1">
+                  <MapPin size={12} /> {user.location}
+                </span>
+              )}
+              <span className="flex items-center gap-1">
+                <Calendar size={12} /> Membro desde {memberSince}
+              </span>
             </div>
-            <div className="flex items-center gap-1">
-              <span className="font-bold">{stats.seriesWatched}</span>
-              <span className="text-xs text-zinc-500">Seguindo</span>
+            <div className="flex flex-row gap-5 align-baseline">
+              <div className="flex flex-row gap-2">
+                <p className="text-sm">-</p>
+                <p className="text-sm font-light">Seguidores</p>
+              </div>
+              <div className="flex flex-row gap-2">
+                <p className="text-sm">-</p>
+                <p className="text-sm font-light">Seguindo</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-start gap-3 ml-8">
+            <div className="flex items-center gap-2">
+              <Clapperboard size={22} className="text-red-500" />
+              <span className="text-2xl font-mono font-extrabold text-white">
+                {stats.moviesWatched}
+              </span>
+              <span className="text-xs uppercase tracking-widest text-zinc-500">
+                {stats.moviesWatched === 1
+                  ? "Filme assistido"
+                  : "Filmes assistidos"}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <TvMinimalPlay size={22} className="text-purple-500" />
+              <span className="text-2xl font-mono font-extrabold text-white">
+                {stats.seriesWatched}
+              </span>
+              <span className="text-xs uppercase tracking-widest text-zinc-500">
+                {stats.seriesWatched === 1
+                  ? "Série assistida"
+                  : "Séries assistidas"}
+              </span>
             </div>
           </div>
         </div>
 
         {/* Botões de ação */}
-        <div className="flex gap-2 mb-1">
+        {/* <div className="flex gap-2 mb-1">
           {extraActions}
           {actionButton}
-        </div>
+        </div> */}
       </div>
     </div>
   );

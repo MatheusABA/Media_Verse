@@ -13,6 +13,7 @@ export type TopMediaItem = {
   mediaId: string
   title: string
   posterUrl: string | null
+  rating: string | null
   tmdbId: string | null
   position: number
   type: "movie" | "tv"

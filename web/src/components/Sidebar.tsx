@@ -3,19 +3,34 @@
 import Link from "next/link"
 import { useAuth } from "../contexts/AuthContext"
 import { useState } from "react"
-import { House, Flame, Newspaper, Search, List, User, LogIn, LogOut, Plus, ArrowLeftFromLine, ArrowRightFromLine, Star } from "lucide-react"
+import {
+  House,
+  Flame,
+  Newspaper,
+  Search,
+  User,
+  LogIn,
+  LogOut,
+  Plus,
+  ArrowLeftFromLine,
+  ArrowRightFromLine,
+  Star,
+  FolderOpen,
+  Heart,
+} from "lucide-react";
 import { usePathname } from "next/dist/client/components/navigation";
 import Image from "next/image";
 import { getFullUrl } from "../utils/imageUrl";
 
 const navItems = [
   { href: "/", label: "Home", icon: <House size={22} /> },
-  { href: "/feed", label: "Feed", icon: <Newspaper size={22}/> },
-  { href: "/trending", label: "Trending", icon: <Flame size={22}/> },
-  { href: "/discover", label: "Descobrir", icon: <Search size={22}/> },
-  { href: "/reviews", label: "Minhas Reviews", icon: <Star size={22}/> },
-  { href: "/lists", label: "Minhas Listas", icon: <List size={22}/> },
-]
+  { href: "/feed", label: "Feed", icon: <Newspaper size={22} /> },
+  { href: "/trending", label: "Trending", icon: <Flame size={22} /> },
+  { href: "/discover", label: "Descobrir", icon: <Search size={22} /> },
+  { href: "/favorites", label: "Favoritos", icon: <Heart size={22} /> },
+  { href: "/reviews", label: "Minhas Reviews", icon: <Star size={22} /> },
+  { href: "/lists", label: "Minhas Listas", icon: <FolderOpen size={22} /> },
+];
 
 export function Sidebar() {
   const { isLoggedIn, user, logout } = useAuth();

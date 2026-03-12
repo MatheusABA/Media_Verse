@@ -167,6 +167,22 @@ export default function ProfilePage() {
     setBannerUploading(false);
   }
 
+async function refreshProfile() {
+  if (!token) return;
+  const res = await fetchWithAuth(`${API_URL}/user/me/profile`);
+  if (res.ok) {
+    const profileData = await res.json();
+    setData(profileData);
+    updateUser({
+      id: profileData.user.id,
+      username: profileData.user.username,
+      email: profileData.user.email,
+      bio: profileData.user.bio,
+      avatarUrl: profileData.user.avatarUrl,
+    });
+  }
+}
+
   async function handleAddMedia(mediaData: {
     tmdbId: string;
     type: "movie" | "tv";
@@ -185,6 +201,7 @@ export default function ProfilePage() {
     if (res.ok) {
       const listRes = await fetchWithAuth(`${API_URL}/user-media`);
       if (listRes.ok) setRecentMedia(await listRes.json());
+      await refreshProfile();
     }
 
     const isCurrentlyFavorited = favorites.some(
@@ -328,6 +345,8 @@ export default function ProfilePage() {
         <div className="flex-1 min-w-0">
           <ProfileStats
             stats={{ ...stats, favoritesCount: favorites.length }}
+            onAddMedia={() => setModalOpen(true)}
+            onAddReview={() => setReviewModalOpen(true)}
           />
           <ReviewedSection
             title="Top 5 Filmes"
@@ -432,6 +451,7 @@ export default function ProfilePage() {
                                 setRecentMedia((prev) =>
                                   prev.filter((m) => m.id !== item.id),
                                 );
+                                await refreshProfile();
                               }
                             }}
                           >
