@@ -7,7 +7,7 @@ export const reviews = pgTable("reviews", {
 
   userMediaId: uuid("user_media_id")
     .notNull()
-    .references(() => userMedia.id),
+    .references(() => userMedia.id, { onDelete: "cascade" }),
 
   content: text("content").notNull(),
 

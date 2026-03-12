@@ -247,6 +247,34 @@ async function refreshProfile() {
     }
   }
 
+  async function handleDeleteMedia(item) {
+    // Buscar review associada
+    const res = await fetch(`${API_URL}/reviews/by-user-media/${item.id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    let review = null;
+    if (res.ok) {
+      try {
+        review = await res.json();
+      } catch {
+        review = null;
+      }
+    }
+
+    let confirmMsg = "Tem certeza que deseja remover esta mídia?";
+    if (review && typeof review === "object" && review.content) {
+      confirmMsg = `A seguinte review também será apagada:\n\n"${review.content}"\n\nTem certeza que deseja continuar?`;
+    }
+
+    if (confirm(confirmMsg)) {
+      await fetchWithAuth(`${API_URL}/user-media/${item.id}`, {
+        method: "DELETE",
+      });
+      setRecentMedia((prev) => prev.filter((m) => m.id !== item.id));
+      await refreshProfile();
+    }
+  }
+
   const editModalData = useMemo(
     () =>
       editMedia
@@ -435,24 +463,10 @@ async function refreshProfile() {
                           <button
                             className="bg-red-600/80 text-white p-1 rounded hover:bg-red-700 transition"
                             title="Remover mídia"
-                            onClick={async (e) => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               e.preventDefault();
-                              if (
-                                confirm(
-                                  "Tem certeza que deseja remover esta mídia?",
-                                )
-                              ) {
-                                await fetchWithAuth(
-                                  `${API_URL}/user-media/${item.id}`,
-                                  {
-                                    method: "DELETE",
-                                  },
-                                );
-                                setRecentMedia((prev) =>
-                                  prev.filter((m) => m.id !== item.id),
-                                );
-                                await refreshProfile();
-                              }
+                              handleDeleteMedia(item);
                             }}
                           >
                             <Trash2 size={16} />
@@ -488,7 +502,7 @@ async function refreshProfile() {
           )}
 
           {lastReview && (
-            <section className="mb-8">
+            <section className="mb-8 max-w-[50%]">
               <h2 className="text-xl font-extrabold mb-4 flex items-center gap-2">
                 <FileText size={20} className="text-purple-400" />
                 Minha última review
