@@ -14,6 +14,7 @@ import { AddMediaModal } from "@/src/components/profile/AddMediaModal";
 import { uploadAvatar, uploadBanner } from "@/src/lib/api";
 import { ReviewModal } from "@/src/components/profile/ReviewModal";
 import { TopMediaItem } from "@/src/types/review";
+import { CropCanvas } from "@/src/components/CropCanvas";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -56,6 +57,11 @@ export default function ProfilePage() {
   }>({ movies: [], series: [] });
 
   const [bannerUploading, setBannerUploading] = useState(false);
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [showCrop, setShowCrop] = useState(false);
+  const [crop, setCrop] = useState({ x: 0, y: 0, w: 600, h: 200 });
+  const [bannerInputKey, setBannerInputKey] = useState(0);
 
   useEffect(() => {
     if (!token) return;
@@ -167,21 +173,21 @@ export default function ProfilePage() {
     setBannerUploading(false);
   }
 
-async function refreshProfile() {
-  if (!token) return;
-  const res = await fetchWithAuth(`${API_URL}/user/me/profile`);
-  if (res.ok) {
-    const profileData = await res.json();
-    setData(profileData);
-    updateUser({
-      id: profileData.user.id,
-      username: profileData.user.username,
-      email: profileData.user.email,
-      bio: profileData.user.bio,
-      avatarUrl: profileData.user.avatarUrl,
-    });
+  async function refreshProfile() {
+    if (!token) return;
+    const res = await fetchWithAuth(`${API_URL}/user/me/profile`);
+    if (res.ok) {
+      const profileData = await res.json();
+      setData(profileData);
+      updateUser({
+        id: profileData.user.id,
+        username: profileData.user.username,
+        email: profileData.user.email,
+        bio: profileData.user.bio,
+        avatarUrl: profileData.user.avatarUrl,
+      });
+    }
   }
-}
 
   async function handleAddMedia(mediaData: {
     tmdbId: string;
@@ -247,7 +253,7 @@ async function refreshProfile() {
     }
   }
 
-  async function handleDeleteMedia(item) {
+  async function handleDeleteMedia(item: UserMediaItem) {
     // Buscar review associada
     const res = await fetch(`${API_URL}/reviews/by-user-media/${item.id}`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -341,6 +347,68 @@ async function refreshProfile() {
         new Date(a.reviewCreatedAt).getTime(),
     )[0] ?? null;
 
+  function handleBannerSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      setBannerPreview(URL.createObjectURL(file));
+      setBannerFile(file);
+      setCrop({ x: 0, y: 0, w: 600, h: 200 });
+      setShowCrop(true);
+    }
+  }
+
+  async function handleBannerSave() {
+    if (!bannerPreview || !bannerFile || !token) return;
+    const img = new window.Image();
+    img.src = bannerPreview;
+    await new Promise((res) => (img.onload = res));
+
+    const CANVAS_W = 800;
+    const CANVAS_H = 250;
+    const scaleX = img.naturalWidth / CANVAS_W;
+    const scaleY = img.naturalHeight / CANVAS_H;
+
+    const srcX = crop.x * scaleX;
+    const srcY = crop.y * scaleY;
+    const srcW = crop.w * scaleX;
+    const srcH = crop.h * scaleY;
+
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = srcW;
+    tempCanvas.height = srcH;
+    const ctx = tempCanvas.getContext("2d");
+    ctx?.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, srcW, srcH);
+
+    tempCanvas.toBlob(async (blob) => {
+      if (!blob) return;
+      const croppedFile = new File([blob], bannerFile.name, {
+        type: bannerFile.type,
+      });
+      setBannerUploading(true);
+      try {
+        const { bannerUrl } = await uploadBanner(croppedFile, token);
+        setData((prev) =>
+          prev ? { ...prev, user: { ...prev.user, bannerUrl } } : prev,
+        );
+        updateUser({ bannerUrl });
+        setBannerPreview(null);
+        setBannerFile(null);
+        setShowCrop(false);
+      } catch {
+        alert("Erro ao enviar banner");
+      }
+      setBannerUploading(false);
+    }, "image/jpeg");
+  }
+
+  function handleBannerCancel() {
+    setBannerPreview(null);
+    setBannerFile(null);
+    setShowCrop(false);
+    setCrop({ x: 0, y: 0, w: 600, h: 200 });
+    setBannerInputKey((prev) => prev + 1);
+  }
+
   return (
     <div>
       <ProfileHeader
@@ -348,8 +416,9 @@ async function refreshProfile() {
         memberSince={memberSince}
         onAvatarChange={handleAvatarChange}
         avatarUploading={avatarUploading}
-        onBannerChange={handleBannerChange}
+        onBannerChange={handleBannerSelect}
         bannerUploading={bannerUploading}
+        bannerInputKey={bannerInputKey}
         extraActions={
           <button
             onClick={() => setReviewModalOpen(true)}
@@ -376,25 +445,30 @@ async function refreshProfile() {
             onAddMedia={() => setModalOpen(true)}
             onAddReview={() => setReviewModalOpen(true)}
           />
-          <ReviewedSection
-            title="Top 5 Filmes"
-            items={topMedia.movies}
-            type="movie"
-          />
 
-          <ReviewedSection
-            title="Top 5 Séries"
-            items={topMedia.series}
-            type="tv"
-          />
-
+          <div className="flex flex-col md:flex-row gap-8 mb-8">
+            <div className="flex-1">
+              <ReviewedSection
+                title="Top 5 Filmes"
+                items={topMedia.movies}
+                type="movie"
+              />
+            </div>
+            <div className="flex-1">
+              <ReviewedSection
+                title="Top 5 Séries"
+                items={topMedia.series}
+                type="tv"
+              />
+            </div>
+          </div>
           {recentMedia.length > 0 && (
-            <section className="mb-8">
+            <section className="w-full overflow-x-auto pb-4">
               <h2 className="text-xl font-extrabold mb-4">
                 Últimos adicionados
               </h2>
               <div className="flex gap-4 overflow-x-auto pb-2">
-                {recentMedia.slice(0, 10).map((item) => {
+                {recentMedia.slice(0, 8).map((item) => {
                   const isFavorited = favorites.some(
                     (f) => f.tmdbId === item.tmdbId,
                   );
@@ -402,7 +476,7 @@ async function refreshProfile() {
                     <Link
                       key={item.id}
                       href={`/${item.type === "movie" ? "movie" : "serie"}/${item.tmdbId}`}
-                      className="shrink-0 w-36 group"
+                      className="shrink-0 w-35 group"
                     >
                       <div className="relative w-36 h-52 rounded-lg overflow-hidden bg-zinc-800">
                         {item.posterUrl ? (
@@ -586,6 +660,28 @@ async function refreshProfile() {
         fetchWithAuth={fetchWithAuth}
         apiUrl={API_URL ?? ""}
       />
+
+      {showCrop && bannerPreview && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-zinc-900 p-6 rounded-lg relative flex flex-col items-center">
+            <CropCanvas image={bannerPreview} crop={crop} setCrop={setCrop} />
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={handleBannerCancel}
+                className="px-4 py-1 bg-zinc-700 text-white rounded"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleBannerSave}
+                className="px-4 py-1 bg-green-600 text-white rounded"
+              >
+                Salvar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
