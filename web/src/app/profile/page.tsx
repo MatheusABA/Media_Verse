@@ -96,7 +96,7 @@ export default function ProfilePage() {
     if (!token) return;
     fetchWithAuth(`${API_URL}/user-favorites`)
       .then((r) => r.json())
-      .then(setFavorites)
+      .then((data) => setFavorites(data.items ?? []))
       .catch(() => {});
   }, [token]);
 

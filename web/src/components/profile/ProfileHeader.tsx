@@ -118,7 +118,7 @@ export function ProfileHeader({
             setBannerHovered(false);
           }}
         >
-          <div className="bg-zinc-900/80 backdrop-blur-md rounded-xl p-4 flex items-center gap-5">
+          <div className="bg-zinc-900/10 backdrop-blur-md rounded-xl p-4 flex items-center gap-5">
             {/* Avatar */}
             <div
               className="relative w-20 h-20 rounded-full bg-zinc-700 border-4 border-zinc-950 flex items-center justify-center shrink-0 shadow-xl overflow-hidden"

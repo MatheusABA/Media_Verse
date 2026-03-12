@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { authPlugin } from "../plugins/auth.plugin";
-import { addFavorite, removeFavorite, getFavorites } from "../services/user_favorite.services";
+import { addFavorite, removeFavorite, getFavorites, getUserFavorites } from "../services/user_favorite.services";
 
 export const userFavoriteRoutes = new Elysia({ prefix: "/user-favorites" })
   .use(authPlugin)
@@ -29,6 +29,10 @@ export const userFavoriteRoutes = new Elysia({ prefix: "/user-favorites" })
       return { success: true };
     }
   )
-  .get("/", async ({ userId }) => {
-    return getFavorites(userId);
+  .get("/", async ({ userId, query }) => {
+    const page = query?.page ? Number(query.page) : 1;
+    const limit = query?.limit ? Number(query.limit) : 20;
+    const type = query?.type || undefined;
+    const search = query?.search || undefined;
+    return getUserFavorites(userId, page, limit, type, search);
   });

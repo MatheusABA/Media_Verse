@@ -1,6 +1,6 @@
 import { db } from "../db/db";
 import { userFavorites, media } from "../db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, desc, and, count, ilike } from "drizzle-orm";
 
 type FavoriteInput = {
   userId: string;
@@ -88,4 +88,45 @@ export async function getFavorites(userId: string) {
     .innerJoin(media, eq(userFavorites.mediaId, media.id))
     .where(eq(userFavorites.userId, userId))
     .orderBy(desc(userFavorites.createdAt));
+}
+
+export async function getUserFavorites(userId, page = 1, limit = 20, type, search) {
+  const pageNum = Math.max(1, Number(page) || 1);
+  const perPage = Math.max(1, Math.min(50, Number(limit) || 20));
+  const offset = (pageNum - 1) * perPage;
+
+  const where = [eq(userFavorites.userId, userId)];
+  if (type) where.push(eq(media.type, type));
+  if (search) where.push(ilike(media.title, `%${search}%`));
+
+  const [{ value: total }] = await db
+    .select({ value: count() })
+    .from(userFavorites)
+    .innerJoin(media, eq(userFavorites.mediaId, media.id))
+    .where(where.length > 1 ? and(...where) : where[0]);
+
+  const items = await db
+    .select({
+      id: userFavorites.id,
+      mediaId: media.id,
+      title: media.title,
+      posterUrl: media.posterUrl,
+      type: media.type,
+      tmdbId: media.tmdbId,
+      createdAt: userFavorites.createdAt,
+    })
+    .from(userFavorites)
+    .innerJoin(media, eq(userFavorites.mediaId, media.id))
+    .where(where.length > 1 ? and(...where) : where[0])
+    .orderBy(desc(userFavorites.createdAt))
+    .limit(perPage)
+    .offset(offset);
+
+  const totalNum = Number(total ?? 0);
+  const totalPages = Math.max(1, Math.ceil(totalNum / perPage));
+
+  return {
+    items,
+    meta: { total: totalNum, page: pageNum, perPage, totalPages },
+  };
 }
