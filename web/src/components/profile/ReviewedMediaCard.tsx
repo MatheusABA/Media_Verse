@@ -7,17 +7,38 @@ export function ReviewedMediaCard({
   item,
   type,
   onRemove,
+  index,
 }: {
   item: TopMediaItem;
   type: "movie" | "tv";
   onRemove?: () => void;
+  index?: number;
 }) {
   const href = item.tmdbId
     ? `/${type === "movie" ? "movie" : "serie"}/${item.tmdbId}`
     : "#";
 
+  const rankColors = [
+    "bg-yellow-400 text-yellow-900", // Ouro
+    "bg-zinc-300 text-zinc-800", // Prata
+    "bg-orange-500 text-white", // Bronze
+    "bg-zinc-700 text-white", // 4º e 5º
+    "bg-zinc-700 text-white",
+  ];
+
   return (
     <div className="relative group shrink-0 w-full">
+      {typeof index === "number" && (
+        <span
+          className={`
+            absolute top-2 left-2 z-20 px-2 py-0.5 rounded-full text-xs font-black shadow
+            ${rankColors[index] ?? "bg-zinc-700 text-white"}
+          `}
+          style={{ minWidth: 24, textAlign: "center" }}
+        >
+          {index + 1}
+        </span>
+      )}
       <NextLink href={href} className="block">
         <div className="relative w-full aspect-2/3 rounded-xl overflow-hidden border-2 border-transparent group-hover:border-zinc-400 transition-all shadow-lg">
           {item.posterUrl ? (

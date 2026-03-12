@@ -103,11 +103,12 @@ export function ReviewedSection({
             "
             style={{ scrollBehavior: "smooth" }}
           >
-            {items.map((item) => (
+            {items.map((item, idx) => (
               <ReviewedMediaCard
                 key={item.id}
                 item={item}
                 type={type}
+                index={idx}
                 onRemove={onRemove ? () => onRemove(item.id) : undefined}
               />
             ))}
