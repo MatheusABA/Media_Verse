@@ -1,6 +1,6 @@
 import { db } from "../db/db"
 import { users, reviews, media, userMedia, lists } from "../db/schema"
-import { eq, and, count } from "drizzle-orm"
+import { eq, and, count, desc } from "drizzle-orm"
 
 export async function getUserById(userId: string) {
   return db.query.users.findFirst({
@@ -90,7 +90,7 @@ export async function getUserProfile(userId: string) {
       .innerJoin(userMedia, eq(reviews.userMediaId, userMedia.id))
       .innerJoin(media, eq(userMedia.mediaId, media.id))
       .where(and(eq(userMedia.userId, userId), eq(media.type, "tv")))
-      .orderBy(reviews.createdAt),
+      .orderBy(desc(reviews.createdAt)),
   ])
 
   return {

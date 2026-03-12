@@ -2,6 +2,7 @@ import Image from "next/image";
 import { MapPin, Calendar } from "lucide-react";
 import { useRef, useState } from "react";
 import { getFullUrl } from "@/src/utils/imageUrl";
+import { ProfileStatsProps } from "./ProfileStats";
 
 type ProfileHeaderProps = {
   user: {
@@ -15,6 +16,8 @@ type ProfileHeaderProps = {
   onAvatarChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   avatarUploading?: boolean;
   actionButton?: React.ReactNode;
+  extraActions?: React.ReactNode;
+  stats: ProfileStatsProps["stats"];
 };
 
 export function ProfileHeader({
@@ -23,6 +26,8 @@ export function ProfileHeader({
   onAvatarChange,
   avatarUploading = false,
   actionButton,
+  extraActions,
+  stats,
 }: ProfileHeaderProps) {
   const [hovered, setHovered] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -47,7 +52,6 @@ export function ProfileHeader({
             {user.username.charAt(0)}
           </span>
         )}
-        {/* Overlay de upload */}
         <label
           className={`absolute inset-0 flex items-center justify-center bg-black/50 transition-opacity cursor-pointer ${
             hovered ? "opacity-100" : "opacity-0"
@@ -71,7 +75,6 @@ export function ProfileHeader({
             <path d="M12 16v-4m0 0V8m0 4h4m-4 0H8m12 4v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4" />
           </svg>
         </label>
-        {/* Overlay de loading */}
         {avatarUploading && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/60">
             <svg
@@ -116,9 +119,10 @@ export function ProfileHeader({
           </span>
         </div>
       </div>
-      {actionButton && (
-        <div className="absolute right-0 bottom-8">{actionButton}</div>
-      )}
+      <div className="absolute right-0 bottom-8 flex gap-2">
+        {extraActions}
+        {actionButton}
+      </div>
     </div>
   );
 }

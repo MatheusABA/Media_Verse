@@ -1,6 +1,6 @@
-import { Film, Tv, Star, List, Heart } from "lucide-react";
+import { Film, Tv, Star, FolderOpen, Heart } from "lucide-react";
 
-type ProfileStatsProps = {
+export type ProfileStatsProps = {
   stats: {
     moviesWatched: number;
     seriesWatched: number;
@@ -33,7 +33,7 @@ export function ProfileStats({ stats }: ProfileStatsProps) {
       value: stats.reviewsCount,
     },
     {
-      icon: <List size={20} color="green" />,
+      icon: <FolderOpen size={20} color="green" />,
       label: "Listas",
       value: stats.listsCount,
     },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Search, X, Heart } from "lucide-react";
 
@@ -62,19 +62,30 @@ export function AddMediaModal({ open, onClose, onSave, initialData }: Props) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const initialDataRef = useRef(initialData);
+  initialDataRef.current = initialData;
+  const prevOpenRef = useRef(false);
+
   useEffect(() => {
-    if (open && initialData) {
-      setStep("rate");
-      setStatus((initialData.status as StatusOption) ?? "watched");
-      setRating(initialData.rating ? parseInt(initialData.rating) : 0);
-      setIsFavorite(initialData.isFavorite ?? false);
-    } else if (open) {
-      setStep("search");
-      setStatus("watched");
-      setRating(0);
-      setIsFavorite(false);
+    const wasOpen = prevOpenRef.current;
+    prevOpenRef.current = open;
+
+    // Só inicializa quando o modal transiciona de fechado → aberto
+    if (open && !wasOpen) {
+      const data = initialDataRef.current;
+      if (data) {
+        setStep("rate");
+        setStatus((data.status as StatusOption) ?? "watched");
+        setRating(data.rating ? parseInt(data.rating) : 0);
+        setIsFavorite(data.isFavorite ?? false);
+      } else {
+        setStep("search");
+        setStatus("watched");
+        setRating(0);
+        setIsFavorite(false);
+      }
     }
-  }, [open, initialData]);
+  }, [open]); // <-- apenas `open` nas deps, não mais `initialData`
 
   if (!open) return null;
 

@@ -1,12 +1,13 @@
 import { ReviewedMedia } from "@/src/types/review";
-import { Link, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import Image from "next/image";
+import NextLink from "next/link";
 
 export function ReviewedMediaCard({ item, type }: { item: ReviewedMedia; type: "movie" | "tv" }) {
   const href = item.tmdbId ? `/${type === "movie" ? "movie" : "serie"}/${item.tmdbId}` : "#"
 
   return (
-    <Link href={href} className="group shrink-0 w-36 md:w-44">
+    <NextLink href={href} className="group shrink-0 w-36 md:w-44">
       <div className="relative w-full aspect-2/3 rounded-xl overflow-hidden border-2 border-transparent group-hover:border-zinc-400 transition-all shadow-lg">
         {item.posterUrl ? (
           <Image
@@ -28,7 +29,9 @@ export function ReviewedMediaCard({ item, type }: { item: ReviewedMedia; type: "
           </div>
         )}
       </div>
-      <p className="mt-2 text-sm font-semibold text-zinc-200 truncate">{item.title}</p>
-    </Link>
-  )
+      <p className="mt-2 text-sm font-semibold text-zinc-200 truncate">
+        {item.title}
+      </p>
+    </NextLink>
+  );
 }

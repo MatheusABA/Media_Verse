@@ -6,6 +6,8 @@ import staticPlugin from "@elysiajs/static";
 import { uploadRoutes } from "./routes/upload.routes";
 import { userMediaRoutes } from "./routes/user_media.routes";
 import { userFavoriteRoutes } from "./routes/user_favorite.routes";
+import { reviewRoutes } from "./routes/review.routes";
+import { userTopMediaRoutes } from "./routes/user_top_media.routes";
 
 const app = new Elysia()
   .use(cors({
@@ -23,6 +25,8 @@ const app = new Elysia()
   .use(uploadRoutes)
   .use(userMediaRoutes)
   .use(userFavoriteRoutes)
+  .use(reviewRoutes)
+  .use(userTopMediaRoutes)
   .listen(3333);
 
 console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
