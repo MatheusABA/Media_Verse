@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Star, Search, FileText, User } from "lucide-react";
 import { useAuth } from "@/src/contexts/AuthContext";
+import { SimpleReviewModal } from "@/src/components/reviews/SimpleReviewModal";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -92,9 +93,9 @@ export default function ReviewsPage() {
     setPage(1);
   }, [typeFilter, statusFilter]);
 
-  useEffect(() => {
+  const fetchEvaluations = () => {
     if (!token) return;
-    // setLoading(true);
+    setLoading(true);
     const params = new URLSearchParams({ page: String(page), limit: "20" });
     if (debouncedSearch) params.set("search", debouncedSearch);
     if (typeFilter) params.set("type", typeFilter);
@@ -108,6 +109,11 @@ export default function ReviewsPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchEvaluations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, page, debouncedSearch, typeFilter, statusFilter]);
 
   if (!isLoggedIn) {
@@ -126,203 +132,218 @@ export default function ReviewsPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto py-6 px-2">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-extrabold text-white mb-1">
-          Minhas Avaliações
-        </h1>
-        <p className="text-zinc-500 text-sm">
-          {loading
-            ? "..."
-            : `${meta.total} ${meta.total === 1 ? "avaliação" : "avaliações"}`}
-        </p>
-      </div>
-
-      {/* Search */}
-      <div className="relative mb-3">
-        <Search
-          size={16}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"
-        />
-        <input
-          type="text"
-          placeholder="Buscar por título..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-600 transition"
-        />
-      </div>
-
-      {/* Filters */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        {TYPE_FILTERS.map((f) => (
-          <button
-            key={f.value}
-            onClick={() => setTypeFilter(f.value)}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase transition ${
-              typeFilter === f.value
-                ? "bg-white text-black"
-                : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
-        <div className="w-px bg-zinc-700 self-stretch mx-1" />
-        {STATUS_FILTERS.map((f) => (
-          <button
-            key={f.value}
-            onClick={() => setStatusFilter(f.value)}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase transition ${
-              statusFilter === f.value
-                ? "bg-white text-black"
-                : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
-
-      {/* List */}
-      {loading ? (
-        <div className="flex items-center justify-center py-20 text-zinc-500 text-sm">
-          Carregando...
+    <>
+      <div className="max-w-4xl mx-auto py-6 px-2">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-extrabold text-white mb-1">
+            Minhas Avaliações
+          </h1>
+          <p className="text-zinc-500 text-sm">
+            {loading
+              ? "..."
+              : `${meta.total} ${meta.total === 1 ? "avaliação" : "avaliações"}`}
+          </p>
         </div>
-      ) : items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-zinc-500 gap-3">
-          <FileText size={44} />
-          <p className="font-bold text-base">Nenhuma avaliação encontrada.</p>
-          {(search || typeFilter || statusFilter) && (
+
+        {/* Search */}
+        <div className="relative mb-3">
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"
+          />
+          <input
+            type="text"
+            placeholder="Buscar por título..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-600 transition"
+          />
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {TYPE_FILTERS.map((f) => (
             <button
-              onClick={() => {
-                setSearch("");
-                setTypeFilter("");
-                setStatusFilter("");
-              }}
-              className="text-xs text-zinc-400 underline underline-offset-2"
+              key={f.value}
+              onClick={() => setTypeFilter(f.value)}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase transition ${
+                typeFilter === f.value
+                  ? "bg-white text-black"
+                  : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"
+              }`}
             >
-              Limpar filtros
+              {f.label}
             </button>
-          )}
-        </div>
-      ) : (
-        <div className="flex flex-col gap-3">
-          {items.map((item) => (
-            <Link
-              key={item.userMediaId}
-              href={`/${item.type === "movie" ? "movie" : "serie"}/${item.tmdbId}`}
-              className="flex items-start gap-4 bg-zinc-900 hover:bg-zinc-800/80 border border-zinc-800 hover:border-zinc-700 rounded-xl p-4 transition"
+          ))}
+          <div className="w-px bg-zinc-700 self-stretch mx-1" />
+          {STATUS_FILTERS.map((f) => (
+            <button
+              key={f.value}
+              onClick={() => setStatusFilter(f.value)}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase transition ${
+                statusFilter === f.value
+                  ? "bg-white text-black"
+                  : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"
+              }`}
             >
-              {/* Poster */}
-              <div
-                className="relative w-11 shrink-0 rounded overflow-hidden bg-zinc-700"
-                style={{ aspectRatio: "2/3" }}
-              >
-                {item.posterUrl ? (
-                  <Image
-                    src={item.posterUrl}
-                    alt={item.title}
-                    fill
-                    className="object-cover"
-                    unoptimized
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-zinc-500 text-xs">
-                    ?
-                  </div>
-                )}
-              </div>
+              {f.label}
+            </button>
+          ))}
+        </div>
 
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-1">
-                  <p className="font-extrabold text-white text-base truncate">
-                    {item.title}
-                  </p>
-                  <span
-                    className={`text-xs font-bold px-2 py-0.5 rounded shrink-0 ${
-                      item.type === "movie" ? "bg-blue-600" : "bg-purple-600"
-                    } text-white`}
-                  >
-                    {item.type === "movie" ? "Filme" : "Série"}
-                  </span>
-                  <span
-                    className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${
-                      STATUS_COLORS[item.status] ?? "bg-zinc-600"
-                    } text-white`}
-                  >
-                    {STATUS_LABELS[item.status] ?? item.status}
-                  </span>
-                  {item.rating && (
-                    <span className="flex items-center gap-1 text-yellow-400 text-xs font-bold shrink-0 ml-auto">
-                      <Star size={12} fill="currentColor" />
-                      {parseFloat(item.rating).toFixed(1)}
-                    </span>
+        {/* List */}
+        {loading ? (
+          <div className="flex items-center justify-center py-20 text-zinc-500 text-sm">
+            Carregando...
+          </div>
+        ) : items.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-zinc-500 gap-3">
+            <FileText size={44} />
+            <p className="font-bold text-base">Nenhuma avaliação encontrada.</p>
+            {(search || typeFilter || statusFilter) && (
+              <button
+                onClick={() => {
+                  setSearch("");
+                  setTypeFilter("");
+                  setStatusFilter("");
+                }}
+                className="text-xs text-zinc-400 underline underline-offset-2"
+              >
+                Limpar filtros
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {items.map((item) => (
+              <Link
+                key={item.userMediaId}
+                href={`/${item.type === "movie" ? "movie" : "serie"}/${item.tmdbId}`}
+                className="flex items-start gap-4 bg-zinc-900 hover:bg-zinc-800/80 border border-zinc-800 hover:border-zinc-700 rounded-xl p-4 transition"
+              >
+                {/* Poster */}
+                <div
+                  className="relative w-11 shrink-0 rounded overflow-hidden bg-zinc-700"
+                  style={{ aspectRatio: "2/3" }}
+                >
+                  {item.posterUrl ? (
+                    <Image
+                      src={item.posterUrl}
+                      alt={item.title}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-zinc-500 text-xs">
+                      ?
+                    </div>
                   )}
                 </div>
 
-                {item.reviewContent ? (
-                  <p className="text-sm text-zinc-400 line-clamp-2 mt-1 leading-relaxed">
-                    {item.reviewContent}
-                  </p>
-                ) : (
-                  <div className="flex items-center gap-2 mt-1">
-                    <button
-                      className="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white text-xs font-bold rounded transition"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setReviewTarget(item);
-                        setReviewModalOpen(true);
-                      }}
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <p className="font-extrabold text-white text-base truncate">
+                      {item.title}
+                    </p>
+                    <span
+                      className={`text-xs font-bold px-2 py-0.5 rounded shrink-0 ${
+                        item.type === "movie" ? "bg-blue-600" : "bg-purple-600"
+                      } text-white`}
                     >
-                      Fazer Review
-                    </button>
-                  </div>
-                )}
-
-                <p className="text-xs text-zinc-600 mt-1.5">
-                  Adicionado em{" "}
-                  {new Date(item.addedAt).toLocaleDateString("pt-BR")}
-                  {item.reviewCreatedAt && (
-                    <span>
-                      {" "}
-                      · Review em{" "}
-                      {new Date(item.reviewCreatedAt).toLocaleDateString(
-                        "pt-BR",
-                      )}
+                      {item.type === "movie" ? "Filme" : "Série"}
                     </span>
-                  )}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
+                    <span
+                      className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                        STATUS_COLORS[item.status] ?? "bg-zinc-600"
+                      } text-white`}
+                    >
+                      {STATUS_LABELS[item.status] ?? item.status}
+                    </span>
+                    {item.rating && (
+                      <span className="flex items-center gap-1 text-yellow-400 text-xs font-bold shrink-0 ml-auto">
+                        <Star size={12} fill="currentColor" />
+                        {parseFloat(item.rating).toFixed(1)}
+                      </span>
+                    )}
+                  </div>
 
-      {/* Pagination */}
-      {meta.totalPages > 1 && (
-        <div className="flex items-center justify-between mt-8">
-          <button
-            disabled={page === 1}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            className="px-5 py-2 bg-zinc-800 text-white font-bold rounded-lg disabled:opacity-40 hover:bg-zinc-700 transition text-sm"
-          >
-            ← Anterior
-          </button>
-          <span className="text-zinc-400 text-sm font-bold">
-            Página {meta.page} de {meta.totalPages}
-          </span>
-          <button
-            disabled={page === meta.totalPages}
-            onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))}
-            className="px-5 py-2 bg-zinc-800 text-white font-bold rounded-lg disabled:opacity-40 hover:bg-zinc-700 transition text-sm"
-          >
-            Próxima →
-          </button>
-        </div>
-      )}
-    </div>
+                  {item.reviewContent ? (
+                    <p className="text-sm text-zinc-400 line-clamp-2 mt-1 leading-relaxed">
+                      {item.reviewContent}
+                    </p>
+                  ) : (
+                    <div className="flex items-center gap-2 mt-1">
+                      <button
+                        className="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white text-xs font-bold rounded transition"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setReviewTarget(item);
+                          setReviewModalOpen(true);
+                        }}
+                      >
+                        Fazer Review
+                      </button>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-zinc-600 mt-1.5">
+                    Adicionado em{" "}
+                    {new Date(item.addedAt).toLocaleDateString("pt-BR")}
+                    {item.reviewCreatedAt && (
+                      <span>
+                        {" "}
+                        · Review em{" "}
+                        {new Date(item.reviewCreatedAt).toLocaleDateString(
+                          "pt-BR",
+                        )}
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {meta.totalPages > 1 && (
+          <div className="flex items-center justify-between mt-8">
+            <button
+              disabled={page === 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              className="px-5 py-2 bg-zinc-800 text-white font-bold rounded-lg disabled:opacity-40 hover:bg-zinc-700 transition text-sm"
+            >
+              ← Anterior
+            </button>
+            <span className="text-zinc-400 text-sm font-bold">
+              Página {meta.page} de {meta.totalPages}
+            </span>
+            <button
+              disabled={page === meta.totalPages}
+              onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))}
+              className="px-5 py-2 bg-zinc-800 text-white font-bold rounded-lg disabled:opacity-40 hover:bg-zinc-700 transition text-sm"
+            >
+              Próxima →
+            </button>
+          </div>
+        )}
+      </div>
+      <SimpleReviewModal
+        open={reviewModalOpen}
+        onClose={() => setReviewModalOpen(false)}
+        onSave={() => {
+          setReviewModalOpen(false);
+          setReviewTarget(null);
+          fetchEvaluations(); // 3. Atualize a lista após salvar
+        }}
+        mediaTitle={reviewTarget?.title}
+        userMediaId={reviewTarget?.userMediaId}
+        fetchWithAuth={fetchWithAuth}
+        apiUrl={API_URL}
+      />
+    </>
   );
 }
