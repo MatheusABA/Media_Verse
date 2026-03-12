@@ -11,7 +11,7 @@ import { ProfileHeader } from "@/src/components/profile/ProfileHeader";
 import { ProfileStats } from "@/src/components/profile/ProfileStats";
 import { ReviewedSection } from "@/src/components/profile/ReviewedSection";
 import { AddMediaModal } from "@/src/components/profile/AddMediaModal";
-import { uploadAvatar } from "@/src/lib/api";
+import { uploadAvatar, uploadBanner } from "@/src/lib/api";
 import { ReviewModal } from "@/src/components/profile/ReviewModal";
 import { TopMediaItem } from "@/src/types/review";
 
@@ -54,6 +54,8 @@ export default function ProfilePage() {
     movies: TopMediaItem[];
     series: TopMediaItem[];
   }>({ movies: [], series: [] });
+
+  const [bannerUploading, setBannerUploading] = useState(false);
 
   useEffect(() => {
     if (!token) return;
@@ -147,6 +149,22 @@ export default function ProfilePage() {
       alert("Erro ao enviar imagem");
     }
     setAvatarUploading(false);
+  }
+
+  async function handleBannerChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !token) return;
+    setBannerUploading(true);
+    try {
+      const { bannerUrl } = await uploadBanner(file, token);
+      setData((prev) =>
+        prev ? { ...prev, user: { ...prev.user, bannerUrl } } : prev,
+      );
+      updateUser({ bannerUrl });
+    } catch {
+      alert("Erro ao enviar banner");
+    }
+    setBannerUploading(false);
   }
 
   async function handleAddMedia(mediaData: {
@@ -285,6 +303,8 @@ export default function ProfilePage() {
         memberSince={memberSince}
         onAvatarChange={handleAvatarChange}
         avatarUploading={avatarUploading}
+        onBannerChange={handleBannerChange}
+        bannerUploading={bannerUploading}
         extraActions={
           <button
             onClick={() => setReviewModalOpen(true)}

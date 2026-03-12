@@ -5,15 +5,20 @@ export type userData = {
     email: string;
     bio: string | null;
     avatarUrl: string | null;
+    bannerUrl: string | null;
+    location: string | null;
+    createdAt: string;
 }
 
 export type ProfileData = {
     user: {
         id: string
         username: string
+        name: string | null
         email: string
         bio: string | null
         avatarUrl: string | null
+        bannerUrl: string | null
         location: string | null
         createdAt: string
     }

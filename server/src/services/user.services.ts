@@ -11,6 +11,8 @@ export async function getUserById(userId: string) {
       email: true,
       bio: true,
       avatarUrl: true,
+      bannerUrl: true,
+      location: true,
       createdAt: true,
     },
   })
@@ -22,9 +24,11 @@ export async function getUserProfile(userId: string) {
     columns: {
       id: true,
       username: true,
+      name: true,
       email: true,
       bio: true,
       avatarUrl: true,
+      bannerUrl: true,
       location: true,
       createdAt: true,
     },

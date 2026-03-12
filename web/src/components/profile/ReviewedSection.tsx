@@ -1,51 +1,58 @@
-import { ReviewedMedia } from "@/src/types/review"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { useRef, useState, useEffect } from "react"
-import { ReviewedMediaCard } from "./ReviewedMediaCard"
+import { TopMediaItem } from "@/src/types/review";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
+import { ReviewedMediaCard } from "./ReviewedMediaCard";
 
 export function ReviewedSection({
   title,
   items,
   type,
 }: {
-  title: string
-  items: ReviewedMedia[]
-  type: "movie" | "tv"
+  title: string;
+  items: TopMediaItem[];
+  type: "movie" | "tv";
 }) {
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const [canScrollLeft, setCanScrollLeft] = useState(false)
-  const [canScrollRight, setCanScrollRight] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   const checkScroll = () => {
-    const el = scrollRef.current
+    const el = scrollRef.current;
     if (el) {
-      setCanScrollLeft(el.scrollLeft > 0)
-      setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1)
+      setCanScrollLeft(el.scrollLeft > 0);
+      setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
     }
-  }
+  };
 
   useEffect(() => {
-    checkScroll()
-    const el = scrollRef.current
-    if (!el) return
-    el.addEventListener("scroll", checkScroll)
-    window.addEventListener("resize", checkScroll)
+    checkScroll();
+    const el = scrollRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", checkScroll);
+    window.addEventListener("resize", checkScroll);
     return () => {
-      el.removeEventListener("scroll", checkScroll)
-      window.removeEventListener("resize", checkScroll)
-    }
-  }, [items])
+      el.removeEventListener("scroll", checkScroll);
+      window.removeEventListener("resize", checkScroll);
+    };
+  }, [items]);
 
   const scroll = (direction: "left" | "right") => {
-    scrollRef.current?.scrollBy({ left: direction === "right" ? 200 : -200, behavior: "smooth" })
-  }
+    scrollRef.current?.scrollBy({
+      left: direction === "right" ? 200 : -200,
+      behavior: "smooth",
+    });
+  };
 
   return (
     <section className="mb-10 relative">
       <h2 className="text-xl font-extrabold mb-4 tracking-tight">{title}</h2>
 
       {items.length === 0 ? (
-        <p className="text-zinc-500 text-sm italic">{title.includes("Série") ? "Adicione alguma série nos seus favoritos":"Adicione algum filme nos seus favoritos"}</p>
+        <p className="text-zinc-500 text-sm italic">
+          {title.includes("Série")
+            ? "Adicione alguma série nos seus favoritos"
+            : "Adicione algum filme nos seus favoritos"}
+        </p>
       ) : (
         <>
           {canScrollLeft && (
@@ -80,5 +87,5 @@ export function ReviewedSection({
         </>
       )}
     </section>
-  )
+  );
 }

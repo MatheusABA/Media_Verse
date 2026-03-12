@@ -1,4 +1,10 @@
-import { Film, Tv, Star, FolderOpen, Heart } from "lucide-react";
+import {
+  Star,
+  FolderOpen,
+  Heart,
+  Clapperboard,
+  TvMinimalPlay,
+} from "lucide-react";
 
 export type ProfileStatsProps = {
   stats: {
@@ -13,12 +19,12 @@ export type ProfileStatsProps = {
 export function ProfileStats({ stats }: ProfileStatsProps) {
   const items = [
     {
-      icon: <Film size={20} color="red" />,
+      icon: <Clapperboard size={20} color="red" />,
       label: "Filmes Assistidos",
       value: stats.moviesWatched,
     },
     {
-      icon: <Tv size={20} color="purple" />,
+      icon: <TvMinimalPlay size={20} color="purple" />,
       label: "Séries Assistidas",
       value: stats.seriesWatched,
     },

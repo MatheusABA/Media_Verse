@@ -1,10 +1,18 @@
-import { ReviewedMedia } from "@/src/types/review";
+import { TopMediaItem } from "@/src/types/review";
 import { Star } from "lucide-react";
 import Image from "next/image";
 import NextLink from "next/link";
 
-export function ReviewedMediaCard({ item, type }: { item: ReviewedMedia; type: "movie" | "tv" }) {
-  const href = item.tmdbId ? `/${type === "movie" ? "movie" : "serie"}/${item.tmdbId}` : "#"
+export function ReviewedMediaCard({
+  item,
+  type,
+}: {
+  item: TopMediaItem;
+  type: "movie" | "tv";
+}) {
+  const href = item.tmdbId
+    ? `/${type === "movie" ? "movie" : "serie"}/${item.tmdbId}`
+    : "#";
 
   return (
     <NextLink href={href} className="group shrink-0 w-36 md:w-44">
