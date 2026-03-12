@@ -1,5 +1,5 @@
 import { TopMediaItem } from "@/src/types/review";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 import { ReviewedMediaCard } from "./ReviewedMediaCard";
 
@@ -7,10 +7,14 @@ export function ReviewedSection({
   title,
   items,
   type,
+  onAddClick,
+  onRemove,
 }: {
   title: string;
   items: TopMediaItem[];
   type: "movie" | "tv";
+  onAddClick?: () => void;
+  onRemove?: (id: string) => void;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -44,14 +48,25 @@ export function ReviewedSection({
   };
 
   return (
-    <section className="mb-10 relative">
-      <h2 className="text-xl font-extrabold mb-4 tracking-tight">{title}</h2>
+    <section className="mb-0 relative">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-extrabold tracking-tight">{title}</h2>
+        {onAddClick && (
+          <button
+            onClick={onAddClick}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold rounded-lg transition"
+          >
+            <Plus size={16} />
+            Adicionar
+          </button>
+        )}
+      </div>
 
       {items.length === 0 ? (
         <p className="text-zinc-500 text-sm italic">
           {title.includes("Série")
-            ? "Adicione alguma série nos seus favoritos"
-            : "Adicione algum filme nos seus favoritos"}
+            ? "Adicione suas séries favoritas ao Top 5"
+            : "Adicione seus filmes favoritos ao Top 5"}
         </p>
       ) : (
         <>
@@ -77,11 +92,24 @@ export function ReviewedSection({
           )}
           <div
             ref={scrollRef}
-            className="flex gap-4 overflow-x-auto pb-4 scrollbar-none"
+            className="
+              w-full
+              grid 
+              grid-cols-3 
+              sm:grid-cols-3 
+              md:grid-cols-4 
+              lg:grid-cols-5 
+              gap-4
+            "
             style={{ scrollBehavior: "smooth" }}
           >
             {items.map((item) => (
-              <ReviewedMediaCard key={item.id} item={item} type={type} />
+              <ReviewedMediaCard
+                key={item.id}
+                item={item}
+                type={type}
+                onRemove={onRemove ? () => onRemove(item.id) : undefined}
+              />
             ))}
           </div>
         </>

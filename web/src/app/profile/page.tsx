@@ -15,6 +15,7 @@ import { uploadAvatar, uploadBanner } from "@/src/lib/api";
 import { ReviewModal } from "@/src/components/profile/ReviewModal";
 import { TopMediaItem } from "@/src/types/review";
 import { CropCanvas } from "@/src/components/CropCanvas";
+import { TopMediaModal } from "@/src/components/profile/TopMediaModal";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -62,6 +63,8 @@ export default function ProfilePage() {
   const [showCrop, setShowCrop] = useState(false);
   const [crop, setCrop] = useState({ x: 0, y: 0, w: 600, h: 200 });
   const [bannerInputKey, setBannerInputKey] = useState(0);
+  const [topMediaModalOpen, setTopMediaModalOpen] = useState(false);
+  const [topMediaType, setTopMediaType] = useState<"movie" | "tv">("movie");
 
   useEffect(() => {
     if (!token) return;
@@ -97,6 +100,19 @@ export default function ProfilePage() {
     fetchWithAuth(`${API_URL}/user-favorites`)
       .then((r) => r.json())
       .then((data) => setFavorites(data.items ?? []))
+      .catch(() => {});
+  }, [token]);
+
+  useEffect(() => {
+    if (!token) return;
+    fetchWithAuth(`${API_URL}/user-top-media`)
+      .then((r) => r.json())
+      .then((data) => {
+        setTopMedia({
+          movies: data.movies ?? [],
+          series: data.series ?? [],
+        });
+      })
       .catch(() => {});
   }, [token]);
 
@@ -281,6 +297,51 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleAddToTop(media: UserMediaItem, position: number) {
+    if (!media.tmdbId) return;
+
+    const res = await fetchWithAuth(`${API_URL}/user-top-media`, {
+      method: "POST",
+      body: JSON.stringify({
+        tmdbId: media.tmdbId,
+        type: media.type,
+        title: media.title,
+        posterUrl: media.posterUrl,
+        position: position,
+      }),
+    });
+
+    if (res.ok) {
+      // Recarregar topMedia
+      const topRes = await fetchWithAuth(`${API_URL}/user-top-media`);
+      if (topRes.ok) {
+        const data = await topRes.json();
+        setTopMedia({
+          movies: data.movies ?? [],
+          series: data.series ?? [],
+        });
+      }
+    }
+  }
+
+  async function handleRemoveFromTop(id: string) {
+    const res = await fetchWithAuth(`${API_URL}/user-top-media/${id}`, {
+      method: "DELETE",
+    });
+
+    if (res.ok) {
+      // Recarregar topMedia
+      const topRes = await fetchWithAuth(`${API_URL}/user-top-media`);
+      if (topRes.ok) {
+        const data = await topRes.json();
+        setTopMedia({
+          movies: data.movies ?? [],
+          series: data.series ?? [],
+        });
+      }
+    }
+  }
+
   const editModalData = useMemo(
     () =>
       editMedia
@@ -452,6 +513,11 @@ export default function ProfilePage() {
                 title="Top 5 Filmes"
                 items={topMedia.movies}
                 type="movie"
+                onAddClick={() => {
+                  setTopMediaType("movie");
+                  setTopMediaModalOpen(true);
+                }}
+                onRemove={handleRemoveFromTop}
               />
             </div>
             <div className="flex-1">
@@ -459,6 +525,11 @@ export default function ProfilePage() {
                 title="Top 5 Séries"
                 items={topMedia.series}
                 type="tv"
+                onAddClick={() => {
+                  setTopMediaType("tv");
+                  setTopMediaModalOpen(true);
+                }}
+                onRemove={handleRemoveFromTop}
               />
             </div>
           </div>
@@ -682,6 +753,17 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
+
+      <TopMediaModal
+        open={topMediaModalOpen}
+        onClose={() => setTopMediaModalOpen(false)}
+        mediaList={recentMedia}
+        currentTop={
+          topMediaType === "movie" ? topMedia.movies : topMedia.series
+        }
+        type={topMediaType}
+        onSave={handleAddToTop}
+      />
     </div>
   );
 }
