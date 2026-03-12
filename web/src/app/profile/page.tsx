@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Trash2, User, Heart, FileText, Star } from "lucide-react";
@@ -65,6 +65,11 @@ export default function ProfilePage() {
   const [bannerInputKey, setBannerInputKey] = useState(0);
   const [topMediaModalOpen, setTopMediaModalOpen] = useState(false);
   const [topMediaType, setTopMediaType] = useState<"movie" | "tv">("movie");
+  const recentMediaScrollRef = useRef<HTMLDivElement>(null);
+  const [recentMediaCanScrollLeft, setRecentMediaCanScrollLeft] =
+    useState(false);
+  const [recentMediaCanScrollRight, setRecentMediaCanScrollRight] =
+    useState(false);
 
   useEffect(() => {
     if (!token) return;
@@ -115,6 +120,47 @@ export default function ProfilePage() {
       })
       .catch(() => {});
   }, [token]);
+
+    const checkRecentMediaScroll = () => {
+      const el = recentMediaScrollRef.current;
+      if (el) {
+        setRecentMediaCanScrollLeft(Math.ceil(el.scrollLeft) >= 0);
+        setRecentMediaCanScrollRight(
+          Math.ceil(el.scrollLeft + el.clientWidth) < el.scrollWidth,
+        );
+      }
+    };
+
+    const scrollRecentMedia = (direction: "left" | "right") => {
+      if (recentMediaScrollRef.current) {
+        recentMediaScrollRef.current.scrollBy({
+          left: direction === "right" ? 200 : -200,
+          behavior: "smooth",
+        });
+      }
+    };
+
+    useEffect(() => {
+      checkRecentMediaScroll();
+      // Força uma checagem após render para garantir cálculo correto
+      const raf = window.requestAnimationFrame(() => {
+        checkRecentMediaScroll();
+      });
+
+      const el = recentMediaScrollRef.current;
+      if (!el) return () => window.cancelAnimationFrame(raf);
+
+      el.addEventListener("scroll", checkRecentMediaScroll);
+      window.addEventListener("resize", checkRecentMediaScroll);
+
+      return () => {
+        window.cancelAnimationFrame(raf);
+        el.removeEventListener("scroll", checkRecentMediaScroll);
+        window.removeEventListener("resize", checkRecentMediaScroll);
+      };
+    }, [recentMedia]);
+
+  
 
   async function toggleFavorite(item: {
     tmdbId: string | null;
@@ -534,12 +580,61 @@ export default function ProfilePage() {
             </div>
           </div>
           {recentMedia.length > 0 && (
-            <section className="w-full pb-4">
+            <section className="w-full pb-4 relative">
               <h2 className="text-xl font-extrabold mb-4">
                 Últimos adicionados
               </h2>
-              <div className="flex gap-4 overflow-x-auto pb-2">
-                {recentMedia.slice(0, 8).map((item) => {
+
+              {/* Seta esquerda */}
+              {recentMediaCanScrollLeft && (
+                <button
+                  type="button"
+                  className="flex items-center justify-center absolute left-2 top-1/2 z-10 bg-zinc-900/80 hover:bg-zinc-800/90 border border-zinc-700 shadow-lg rounded-full w-10 h-10 transition"
+                  onClick={() => scrollRecentMedia("left")}
+                  aria-label="Scroll left"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M15 18l-6-6 6-6" />
+                  </svg>
+                </button>
+              )}
+
+              {/* Seta direita */}
+              {recentMediaCanScrollRight && (
+                <button
+                  type="button"
+                  className="flex items-center justify-center absolute right-2 top-1/2 z-10 bg-zinc-900/80 hover:bg-zinc-800/90 border border-zinc-700 shadow-lg rounded-full w-10 h-10 transition"
+                  onClick={() => scrollRecentMedia("right")}
+                  aria-label="Scroll right"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M9 6l6 6-6 6" />
+                  </svg>
+                </button>
+              )}
+
+              <div
+                ref={recentMediaScrollRef}
+                className="flex gap-4 overflow-x-auto pb-2 scrollbar-none"
+                style={{ scrollBehavior: "smooth" }}
+              >
+                {recentMedia.slice(0, 10).map((item) => {
                   const isFavorited = favorites.some(
                     (f) => f.tmdbId === item.tmdbId,
                   );
@@ -547,7 +642,7 @@ export default function ProfilePage() {
                     <Link
                       key={item.id}
                       href={`/${item.type === "movie" ? "movie" : "serie"}/${item.tmdbId}`}
-                      className="shrink-0 w-35 group"
+                      className="shrink-0 w-36 group"
                     >
                       <div className="relative w-36 h-52 rounded-lg overflow-hidden bg-zinc-800">
                         {item.posterUrl ? (

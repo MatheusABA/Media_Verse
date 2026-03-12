@@ -4,12 +4,12 @@ interface SimpleReviewModalProps {
   open: boolean;
   onClose: () => void;
   onSave?: () => void;
-  mediaTitle: string;
-  userMediaId: string | number;
-  reviewId?: string | number;
-  reviewContent?: string;
+  mediaTitle: string | undefined;
+  userMediaId: string | undefined;
+  reviewId?: string | number | null;
+  reviewContent?: string | null;
   fetchWithAuth: (url: string, options: RequestInit) => Promise<Response>;
-  apiUrl: string;
+  apiUrl: string | undefined;
 }
 
 export function SimpleReviewModal({

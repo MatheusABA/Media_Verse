@@ -31,12 +31,14 @@ export function MediaCard({ item }: { item: MediaItem }) {
             Sem imagem
           </div>
         )}
-        <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <div className="flex items-center gap-1 text-yellow-400 text-xs font-bold">
-            <Star size={12} fill="currentColor" />
-            {item.vote_average.toFixed(1)}
+        {item.vote_average > 0 && (
+          <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-1 text-yellow-400 text-xs font-bold">
+              <Star size={12} fill="currentColor" />
+              {item.vote_average.toFixed(1)}
+            </div>
           </div>
-        </div>
+        )}
       </div>
       <p className="mt-2 text-sm font-semibold text-zinc-200 truncate">
         {title}
