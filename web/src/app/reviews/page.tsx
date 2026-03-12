@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Star, Search, FileText, User } from "lucide-react";
+import { Star, Search, FileText, User, Trash2, Edit2 } from "lucide-react";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { SimpleReviewModal } from "@/src/components/reviews/SimpleReviewModal";
 
@@ -77,6 +77,7 @@ export default function ReviewsPage() {
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [reviewTarget, setReviewTarget] = useState<EvaluationItem | null>(null);
+  const [reviewMode, setReviewMode] = useState<"create" | "edit">("create");
 
   useEffect(() => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
@@ -130,6 +131,33 @@ export default function ReviewsPage() {
       </div>
     );
   }
+
+  const handleDeleteUserMedia = async (userMediaId: string, title: string) => {
+    if (
+      !window.confirm(
+        `Tem certeza que deseja excluir "${title}"? Isso também apagará qualquer review associada.`,
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const response = await fetchWithAuth(
+        `${API_URL}/user-media/${userMediaId}`,
+        {
+          method: "DELETE",
+        },
+      );
+      if (response.ok) {
+        setItems(items.filter((item) => item.userMediaId !== userMediaId));
+      } else {
+        alert("Erro ao excluir item");
+      }
+    } catch (error) {
+      console.error("Erro ao deletar user_media:", error);
+      alert("Erro ao excluir item");
+    }
+  };
 
   return (
     <>
@@ -271,20 +299,57 @@ export default function ReviewsPage() {
                   </div>
 
                   {item.reviewContent ? (
-                    <p className="text-sm text-zinc-400 line-clamp-2 mt-1 leading-relaxed">
-                      {item.reviewContent}
-                    </p>
+                    <div className="flex flex-col gap-2 mt-1">
+                      <p className="text-sm text-zinc-400 line-clamp-2 leading-relaxed">
+                        {item.reviewContent}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <button
+                          className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded transition"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setReviewMode("edit");
+                            setReviewTarget(item);
+                            setReviewModalOpen(true);
+                          }}
+                        >
+                          <Edit2 size={14} />
+                          Editar
+                        </button>
+                        <button
+                          className="flex items-center gap-1 px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded transition"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleDeleteUserMedia(item.userMediaId, item.title);
+                          }}
+                        >
+                          <Trash2 size={14} />
+                          Excluir
+                        </button>
+                      </div>
+                    </div>
                   ) : (
                     <div className="flex items-center gap-2 mt-1">
                       <button
                         className="px-3 py-1 bg-yellow-600 hover:bg-yellow-700 text-white text-xs font-bold rounded transition"
                         onClick={(e) => {
                           e.preventDefault();
+                          setReviewMode("create");
                           setReviewTarget(item);
                           setReviewModalOpen(true);
                         }}
                       >
                         Fazer Review
+                      </button>
+                      <button
+                        className="flex items-center gap-1 px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded transition"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleDeleteUserMedia(item.userMediaId, item.title);
+                        }}
+                      >
+                        <Trash2 size={14} />
+                        Excluir
                       </button>
                     </div>
                   )}
@@ -333,14 +398,21 @@ export default function ReviewsPage() {
       </div>
       <SimpleReviewModal
         open={reviewModalOpen}
-        onClose={() => setReviewModalOpen(false)}
+        onClose={() => {
+          setReviewModalOpen(false);
+          setReviewTarget(null);
+          setReviewMode("create");
+        }}
         onSave={() => {
           setReviewModalOpen(false);
           setReviewTarget(null);
-          fetchEvaluations(); // 3. Atualize a lista após salvar
+          setReviewMode("create");
+          fetchEvaluations();
         }}
         mediaTitle={reviewTarget?.title}
         userMediaId={reviewTarget?.userMediaId}
+        reviewId={reviewTarget?.reviewId}
+        reviewContent={reviewTarget?.reviewContent}
         fetchWithAuth={fetchWithAuth}
         apiUrl={API_URL}
       />

@@ -534,7 +534,7 @@ export default function ProfilePage() {
             </div>
           </div>
           {recentMedia.length > 0 && (
-            <section className="w-full overflow-x-auto pb-4">
+            <section className="w-full pb-4">
               <h2 className="text-xl font-extrabold mb-4">
                 Últimos adicionados
               </h2>

@@ -123,7 +123,9 @@ export function TopMediaModal({
           {/* Busca */}
           <div>
             <label className="block text-sm font-bold mb-2 text-zinc-300">
-              Busca:
+              Busque{" "}
+              {type === "movie" ? "algum dos filmes" : "alguma das séries"} que
+              você já avaliou:
             </label>
             <div className="flex gap-2">
               <input
@@ -214,7 +216,7 @@ export function TopMediaModal({
           {/* Lista de Mídias */}
           <div>
             <label className="block text-sm font-bold mb-2 text-zinc-300">
-              Escolha{" "}
+              Ou escolha entre{" "}
               {type === "movie"
                 ? "um dos últimos filmes avaliados"
                 : "uma das últimas séries avaliadas"}

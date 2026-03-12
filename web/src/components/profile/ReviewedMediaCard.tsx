@@ -61,7 +61,7 @@ export function ReviewedMediaCard({
             </div>
           )}
         </div>
-        <p className="mt-2 text-sm font-semibold text-zinc-200 truncate">
+        <p className="mt-2 text-sm font-semibold text-zinc-200 wrap">
           {item.title}
         </p>
       </NextLink>
