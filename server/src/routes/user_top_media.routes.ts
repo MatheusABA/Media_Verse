@@ -6,7 +6,7 @@ import {
   removeTopMediaEntry,
 } from "../services/user_top_media.services"
 
-export const userTopMediaRoutes = new Elysia({ prefix: "/user-top-media" })
+export const userTopMediaRoutes = new Elysia({ prefix: "/user-top-media", tags: ["User Top Media"] })
   .use(authPlugin)
   .get("/", async ({ userId }) => {
     return getUserTopMedia(userId)

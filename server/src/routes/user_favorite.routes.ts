@@ -2,7 +2,7 @@ import { Elysia, t } from "elysia";
 import { authPlugin } from "../plugins/auth.plugin";
 import { addFavorite, removeFavorite, getFavorites, getUserFavorites } from "../services/user_favorite.services";
 
-export const userFavoriteRoutes = new Elysia({ prefix: "/user-favorites" })
+export const userFavoriteRoutes = new Elysia({ prefix: "/user-favorites", tags: ["User Favorites"] })
   .use(authPlugin)
   .post(
     "/",

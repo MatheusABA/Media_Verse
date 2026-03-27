@@ -2,7 +2,7 @@ import { Elysia } from "elysia"
 import { authPlugin } from "../plugins/auth.plugin"
 import { getUserById, getUserProfile } from "../services/user.services"
 
-export const userRoutes = new Elysia({ prefix: "/user" })
+export const userRoutes = new Elysia({ prefix: "/user", tags: ["User"] })
   .use(authPlugin)
   .get("/me", async (ctx) => {
     const { userId } = ctx

@@ -10,6 +10,7 @@ import { reviewRoutes } from "./routes/review.routes";
 import { userTopMediaRoutes } from "./routes/user_top_media.routes";
 import { listRoutes } from "./routes/list.routes";
 import { discoverRoutes } from "./routes/discover.routes";
+import openapi from "@elysiajs/openapi";
 
 const app = new Elysia()
   .use(cors({
@@ -21,6 +22,21 @@ const app = new Elysia()
   .use(staticPlugin({
     prefix: "/uploads",
     assets: "./uploads",
+  }))
+  .use(openapi({
+    documentation: {
+      tags: [
+        { name: "Auth", description: "Endpoints de autenticação" },
+        { name: "User", description: "Endpoints relacionados a usuários" },
+        { name: "Upload", description: "Endpoints para upload de arquivos" },
+        { name: "User Media", description: "Endpoints para gerenciamento de mídia do usuário" },
+        { name: "User Favorite", description: "Endpoints para gerenciamento de favoritos do usuário" },
+        { name: "Review", description: "Endpoints para gerenciamento de reviews" },
+        { name: "User Top Media", description: "Endpoints para gerenciamento de top mídia do usuário" },
+        { name: "List", description: "Endpoints para gerenciamento de listas personalizadas" },
+        { name: "Discover", description: "Endpoints para descoberta de conteúdo e interações sociais" },
+      ]
+    }
   }))
   .use(authRoutes)
   .use(userRoutes)

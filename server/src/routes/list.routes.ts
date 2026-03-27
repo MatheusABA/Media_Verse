@@ -10,7 +10,7 @@ import {
   removeMediaFromList,
 } from "../services/list.services";
 
-export const listRoutes = new Elysia({ prefix: "/lists" })
+export const listRoutes = new Elysia({ prefix: "/lists", tags: ["List"] })
   .use(authPlugin)
 
   // 1. Criar uma nova lista

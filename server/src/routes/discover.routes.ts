@@ -2,7 +2,7 @@ import { Elysia, t } from "elysia";
 import { authPlugin } from "../plugins/auth.plugin";
 import { getDiscoverFeed, addVote, addComment } from "../services/discover.services";
 
-export const discoverRoutes = new Elysia({ prefix: "/discover" })
+export const discoverRoutes = new Elysia({ prefix: "/discover", tags: ["Discover"] })
   
   // 1. Pega o Feed global (Não exige token, mas se mandar a gente sabe se ele votou)
   // Como Elysia precisa de plugin pra usar o userId, tentamos decodificar manualmente se houver, 

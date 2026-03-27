@@ -8,7 +8,7 @@ import {
   getMyEvaluations,
 } from "../services/review.services";
 
-export const reviewRoutes = new Elysia({ prefix: "/reviews" })
+export const reviewRoutes = new Elysia({ prefix: "/reviews", tags: ["Review"] })
   .use(authPlugin)
   .post("/", async ({ body }) => {
     return upsertReview(body);

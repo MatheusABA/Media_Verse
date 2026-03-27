@@ -6,7 +6,7 @@ import {
   deleteUserMedia,
 } from "../services/user_media.services";
 
-export const userMediaRoutes = new Elysia({ prefix: "/user-media" })
+export const userMediaRoutes = new Elysia({ prefix: "/user-media", tags: ["User Media"] })
   .use(authPlugin)
   .post(
     "/",

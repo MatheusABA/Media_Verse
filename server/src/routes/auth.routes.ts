@@ -5,7 +5,7 @@ import { registerUser, loginUser, createRefreshToken, rotateRefreshToken, revoke
 
 const ACCESS_TOKEN_EXP = 60 * 15 // 15 minutos
 
-export const authRoutes = new Elysia({ prefix: "/auth" })
+export const authRoutes = new Elysia({ prefix: "/auth" , tags: ["Auth"] })
   .use(jwt({ name: "jwt", secret: process.env.JWT_SECRET! }))
 
   .post("/register", async ({ body, set }) => {

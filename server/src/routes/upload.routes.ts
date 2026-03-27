@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { authPlugin } from "../plugins/auth.plugin";
 import { saveImage } from "../services/upload.services";
 
-export const uploadRoutes = new Elysia({ prefix: "/upload" })
+export const uploadRoutes = new Elysia({ prefix: "/upload", tags: ["Upload"] })
   .use(authPlugin)
   .post(
     "/avatar",
