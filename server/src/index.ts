@@ -9,6 +9,7 @@ import { userFavoriteRoutes } from "./routes/user_favorite.routes";
 import { reviewRoutes } from "./routes/review.routes";
 import { userTopMediaRoutes } from "./routes/user_top_media.routes";
 import { listRoutes } from "./routes/list.routes";
+import { discoverRoutes } from "./routes/discover.routes";
 
 const app = new Elysia()
   .use(cors({
@@ -29,6 +30,7 @@ const app = new Elysia()
   .use(reviewRoutes)
   .use(userTopMediaRoutes)
   .use(listRoutes)
+  .use(discoverRoutes)
   .listen(3333);
 
 console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
