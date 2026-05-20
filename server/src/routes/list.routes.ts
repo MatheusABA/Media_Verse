@@ -9,10 +9,11 @@ import {
   getListItems,
   removeMediaFromList,
 } from "../services/list.services";
+// import { authRateLimit } from "../plugins/rate_limiting.plugin";
 
 export const listRoutes = new Elysia({ prefix: "/lists", tags: ["List"] })
   .use(authPlugin)
-
+  // .use(authRateLimit)
   // 1. Criar uma nova lista
   .post(
     "/",

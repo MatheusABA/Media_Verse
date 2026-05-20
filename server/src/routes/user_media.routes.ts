@@ -5,9 +5,11 @@ import {
   getUserMediaList,
   deleteUserMedia,
 } from "../services/user_media.services";
+// import { authRateLimit } from "../plugins/rate_limiting.plugin";
 
 export const userMediaRoutes = new Elysia({ prefix: "/user-media", tags: ["User Media"] })
   .use(authPlugin)
+  // .use(authRateLimit)
   .post(
     "/",
     async ({ body, userId }) => {

@@ -1,30 +1,32 @@
 import { Elysia, t } from "elysia";
 import { authPlugin } from "../plugins/auth.plugin";
 import { getDiscoverFeed, addVote, addComment } from "../services/discover.services";
+// import { authRateLimit, publicRateLimit } from "../plugins/rate_limiting.plugin";
+import jwt from "@elysiajs/jwt";
 
 export const discoverRoutes = new Elysia({ prefix: "/discover", tags: ["Discover"] })
-  
+//   .use(publicRateLimit)
   // 1. Pega o Feed global (Não exige token, mas se mandar a gente sabe se ele votou)
-  // Como Elysia precisa de plugin pra usar o userId, tentamos decodificar manualmente se houver, 
-  // mas pra não travar quem não tem login, criamos um bloco aberto
-  .resolve(async ({ headers, jwt }: any) => {
-      let userId = undefined;
+  .use(jwt({ name: "jwt", secret: process.env.JWT_SECRET!}))
+  .resolve(async ({ headers, jwt }) => {
+      let requesterId: string | undefined = undefined;
       const authHeader = headers.authorization;
+
       if (authHeader && authHeader.startsWith("Bearer ")) {
           const token = authHeader.split(" ")[1];
           const payload = await jwt.verify(token);
-          if (payload && payload.userId) {
-              userId = payload.userId;
+          if (payload && payload.sub) {
+              requesterId = payload.sub as string;
           }
       }
-      return { requesterId: userId };
+      return { requesterId };
   })
   .get("/", async ({ requesterId }) => {
     return await getDiscoverFeed(requesterId);
   })
 
   .use(authPlugin)
-
+//   .use(authRateLimit)
   // 2. Dar upvote ou downvote (-1, 0 remover ou 1)
   .post("/vote", async ({ userId, body }) => {
       const { targetId, type, value } = body;

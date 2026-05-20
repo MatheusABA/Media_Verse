@@ -5,9 +5,11 @@ import {
   setTopMediaEntry,
   removeTopMediaEntry,
 } from "../services/user_top_media.services"
+// import { authRateLimit } from "../plugins/rate_limiting.plugin"
 
 export const userTopMediaRoutes = new Elysia({ prefix: "/user-top-media", tags: ["User Top Media"] })
   .use(authPlugin)
+  // .use(authRateLimit)
   .get("/", async ({ userId }) => {
     return getUserTopMedia(userId)
   })

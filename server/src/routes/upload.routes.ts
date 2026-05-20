@@ -4,9 +4,11 @@ import { users } from "../db/schema/users";
 import { eq } from "drizzle-orm";
 import { authPlugin } from "../plugins/auth.plugin";
 import { saveImage } from "../services/upload.services";
+// import { authRateLimit } from "../plugins/rate_limiting.plugin";
 
 export const uploadRoutes = new Elysia({ prefix: "/upload", tags: ["Upload"] })
   .use(authPlugin)
+  // .use(authRateLimit)
   .post(
     "/avatar",
     async ({ body, userId }) => {

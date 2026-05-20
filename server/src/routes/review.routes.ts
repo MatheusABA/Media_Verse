@@ -7,9 +7,11 @@ import {
   deleteReview,
   getMyEvaluations,
 } from "../services/review.services";
+// import { authRateLimit } from "../plugins/rate_limiting.plugin";
 
 export const reviewRoutes = new Elysia({ prefix: "/reviews", tags: ["Review"] })
   .use(authPlugin)
+  // .use(authRateLimit)
   .post("/", async ({ body }) => {
     return upsertReview(body);
   }, {

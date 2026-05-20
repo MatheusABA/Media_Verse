@@ -1,9 +1,11 @@
 import { Elysia } from "elysia"
 import { authPlugin } from "../plugins/auth.plugin"
 import { getUserById, getUserProfile } from "../services/user.services"
+// import { authRateLimit } from "../plugins/rate_limiting.plugin"
 
 export const userRoutes = new Elysia({ prefix: "/user", tags: ["User"] })
   .use(authPlugin)
+  // .use(authRateLimit)
   .get("/me", async (ctx) => {
     const { userId } = ctx
     const user = await getUserById(userId)

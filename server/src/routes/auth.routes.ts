@@ -1,11 +1,12 @@
-// src/routes/auth.routes.ts
 import { Elysia, t } from "elysia"
 import { jwt } from "@elysiajs/jwt"
 import { registerUser, loginUser, createRefreshToken, rotateRefreshToken, revokeRefreshToken } from "../services/auth.services"
+// import { publicRateLimit } from "../plugins/rate_limiting.plugin"
 
 const ACCESS_TOKEN_EXP = 60 * 15 // 15 minutos
 
 export const authRoutes = new Elysia({ prefix: "/auth" , tags: ["Auth"] })
+  // .use(publicRateLimit)
   .use(jwt({ name: "jwt", secret: process.env.JWT_SECRET! }))
 
   .post("/register", async ({ body, set }) => {

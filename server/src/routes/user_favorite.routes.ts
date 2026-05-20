@@ -1,9 +1,11 @@
 import { Elysia, t } from "elysia";
 import { authPlugin } from "../plugins/auth.plugin";
 import { addFavorite, removeFavorite, getFavorites, getUserFavorites } from "../services/user_favorite.services";
+// import { authRateLimit } from "../plugins/rate_limiting.plugin";
 
 export const userFavoriteRoutes = new Elysia({ prefix: "/user-favorites", tags: ["User Favorites"] })
   .use(authPlugin)
+  // .use(authRateLimit)
   .post(
     "/",
     async ({ body, userId }) => {

@@ -1,0 +1,6 @@
+{
+  "name": "mediaverseserver",
+  "main": "./src/index.ts",
+  "compatibility_date": "2026-05-20",
+  "compatibility_flags": ["nodejs_compat"]
+}
