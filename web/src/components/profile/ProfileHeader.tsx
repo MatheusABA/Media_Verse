@@ -219,7 +219,7 @@ export function ProfileHeader({
                   <span className="text-xl font-mono font-extrabold text-white">
                     {stats.moviesWatched}
                   </span>
-                  <span className="text-xs uppercase tracking-widest text-zinc-400">
+                  <span className="text-xs uppercase tracking-widest text-white">
                     {stats.moviesWatched === 1
                       ? "Filme assistido"
                       : "Filmes assistidos"}
@@ -230,7 +230,7 @@ export function ProfileHeader({
                   <span className="text-xl font-mono font-extrabold text-white">
                     {stats.seriesWatched}
                   </span>
-                  <span className="text-xs uppercase tracking-widest text-zinc-400">
+                  <span className="text-xs uppercase tracking-widest text-white">
                     {stats.seriesWatched === 1
                       ? "Série assistida"
                       : "Séries assistidas"}
